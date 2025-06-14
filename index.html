@@ -185,6 +185,14 @@
             margin-bottom: 30px;
         }
 
+        .disclaimer {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
         .findex-analysis {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
@@ -744,8 +752,15 @@
             displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
         
-        // Display matches
+        // Display matches with WORKING add buttons - VERSION 2.0
         function displayMatches(matches, investment) {
+            console.log('=== DISPLAY MATCHES V2.0 CALLED ===');
+            console.log('THIS IS THE NEW VERSION WITH EVENT LISTENERS');
+            console.log('Matches count:', matches.length);
+            console.log('Investment for matching:', investment);
+            
+            currentMatches = matches;
+            
             const matchesSection = document.getElementById('matchesSection');
             const matchesList = document.getElementById('matchesList');
             
@@ -757,14 +772,14 @@
             
             // Filter matches to only show recent dates (within 6 months of user's date)
             const userDate = investment.date.getTime();
-            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000; // 6 months in milliseconds
+            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
             
             const recentMatches = matches.filter(match => {
                 const dateDiff = Math.abs(match.date.getTime() - userDate);
                 return dateDiff <= sixMonthsMs;
             });
             
-            const displayMatches = recentMatches.slice(0, 8); // Show max 8 recent matches
+            const displayMatches = recentMatches.slice(0, 8);
             
             if (displayMatches.length === 0) {
                 matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
@@ -772,7 +787,16 @@
                 return;
             }
             
-            matchesList.innerHTML = displayMatches.map((match, index) => {
+            currentMatches = displayMatches;
+            console.log('About to create', displayMatches.length, 'match elements WITH EVENT LISTENERS');
+            
+            // CLEAR THE CONTAINER AND REBUILD FROM SCRATCH
+            matchesList.innerHTML = '';
+            console.log('Cleared matchesList container');
+            
+            displayMatches.forEach((match, index) => {
+                console.log(`Creating match ${index} WITH EVENT LISTENER:`, match.name);
+                
                 const growthDiff = Math.abs(match.growthAA - investment.growthAA);
                 const defDiff = Math.abs(match.defAA - investment.defAA);
                 const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
@@ -785,105 +809,159 @@
                     inv.type === 'CSV Database'
                 );
                 
-                const buttonClass = alreadyAdded ? 'btn-secondary' : 'btn-success';
-                const buttonText = alreadyAdded ? 'Added' : 'Add';
-                const buttonDisabled = alreadyAdded ? 'disabled' : '';
+                console.log(`Match ${index} already added:`, alreadyAdded);
                 
-                return `
-                    <div class="dropdown-item" style="border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 10px;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${match.name}</h6>
-                                <div class="match-info">
-                                    Growth: ${match.growthAA.toFixed(1)}% (±${growthDiff.toFixed(1)}%) | 
-                                    Defensive: ${match.defAA.toFixed(1)}% (±${defDiff.toFixed(1)}%) | 
-                                    Date: ${match.date.toLocaleDateString('en-AU')} (${daysDiff} days difference)
-                                </div>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        1Y: ${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'} | 
-                                        3Y: ${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'} | 
-                                        5Y: ${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}
-                                    </small>
-                                </div>
-                            </div>
-                            <button class="btn ${buttonClass} btn-sm" ${buttonDisabled} onclick="addCSVMatch(this, ${index})">
-                                <i class="bi bi-${alreadyAdded ? 'check' : 'plus'}-circle"></i> ${buttonText}
-                            </button>
-                        </div>
+                // CREATE ELEMENTS PROGRAMMATICALLY - NO innerHTML, NO onclick
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'dropdown-item';
+                matchDiv.style.cssText = 'border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 10px;';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'd-flex justify-content-between align-items-center';
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.innerHTML = `
+                    <h6 class="mb-1">${match.name}</h6>
+                    <div class="match-info">
+                        Growth: ${match.growthAA.toFixed(1)}% (±${growthDiff.toFixed(1)}%) | 
+                        Defensive: ${match.defAA.toFixed(1)}% (±${defDiff.toFixed(1)}%) | 
+                        Date: ${match.date.toLocaleDateString('en-AU')} (${daysDiff} days difference)
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            1Y: ${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'} | 
+                            3Y: ${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'} | 
+                            5Y: ${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}
+                        </small>
                     </div>
                 `;
-            }).join('');
+                
+                const button = document.createElement('button');
+                button.className = alreadyAdded ? 'btn btn-secondary btn-sm' : 'btn btn-success btn-sm';
+                button.disabled = alreadyAdded;
+                button.innerHTML = `<i class="bi bi-${alreadyAdded ? 'check' : 'plus'}-circle"></i> ${alreadyAdded ? 'Added' : 'Add'}`;
+                button.setAttribute('data-version', 'v2.0'); // Mark this as new version
+                
+                console.log(`Creating button for match ${index}, disabled:`, alreadyAdded, 'VERSION: 2.0');
+                
+                if (!alreadyAdded) {
+                    console.log(`Adding EVENT LISTENER (NOT ONCLICK) for match ${index}`);
+                    // ADD EVENT LISTENER DIRECTLY - NO onclick ATTRIBUTE AT ALL
+                    button.addEventListener('click', function(e) {
+                        console.log('=== BUTTON CLICKED VIA EVENT LISTENER V2.0 ===');
+                        console.log('This proves the NEW code is running');
+                        console.log('Event:', e);
+                        console.log('Adding investment:', match.name);
+                        console.log('Match data:', match);
+                        
+                        // Check for duplicates
+                        const exists = investments.some(inv => 
+                            inv.name === match.name && 
+                            inv.date.getTime() === match.date.getTime() && 
+                            inv.type === 'CSV Database'
+                        );
+                        
+                        if (exists) {
+                            console.log('Investment already exists, skipping');
+                            alert('Investment already added!');
+                            return;
+                        }
+                        
+                        const newInvestment = {
+                            name: match.name,
+                            date: match.date,
+                            oneYear: match.oneYear,
+                            threeYears: match.threeYears,
+                            fiveYears: match.fiveYears,
+                            growthAA: match.growthAA,
+                            defAA: match.defAA,
+                            type: 'CSV Database',
+                            id: Date.now() + Math.random()
+                        };
+                        
+                        console.log('Creating new investment:', newInvestment);
+                        
+                        investments.push(newInvestment);
+                        console.log('Investment added! Total investments:', investments.length);
+                        console.log('All investments:', investments);
+                        
+                        console.log('Calling updateComparison...');
+                        updateComparison();
+                        console.log('updateComparison completed');
+                        
+                        // Update this button
+                        this.innerHTML = '<i class="bi bi-check-circle"></i> Added';
+                        this.className = 'btn btn-secondary btn-sm';
+                        this.disabled = true;
+                        console.log('Button updated to Added state');
+                        
+                        alert(`"${match.name}" added to comparison!`);
+                    });
+                } else {
+                    console.log(`Match ${index} already added, no event listener needed`);
+                }
+                
+                contentDiv.appendChild(infoDiv);
+                contentDiv.appendChild(button);
+                matchDiv.appendChild(contentDiv);
+                matchesList.appendChild(matchDiv);
+                
+                console.log(`Match ${index} element created and appended WITH EVENT LISTENER`);
+            });
             
+            console.log('All matches created with EVENT LISTENERS, showing section');
             matchesSection.style.display = 'block';
+            console.log('=== DISPLAY MATCHES V2.0 COMPLETED ===');
         }
         
-        // Add CSV match to comparison  
-        function addCSVMatch(buttonElement, matchIndex) {
-            console.log('addCSVMatch called with matchIndex:', matchIndex);
-            console.log('currentMatches length:', currentMatches.length);
-            console.log('currentMatches:', currentMatches);
+        // Remove the old addCSVMatch function since it's now inline
+        
+        // COMPLETELY NEW FUNCTION NAME TO AVOID ANY CACHING ISSUES
+        window.addCSVData = function(name, date, oneYear, threeYears, fiveYears, growthAA, defAA) {
+            console.log('=== ADDING CSV DATA TO TABLE ===');
+            console.log('Name:', name);
+            console.log('Date:', date);
+            console.log('Performance:', oneYear, threeYears, fiveYears);
+            console.log('Allocation:', growthAA, defAA);
             
-            if (!currentMatches || currentMatches.length === 0) {
-                console.error('No current matches available');
-                alert('Error: No matches data available. Please try searching again.');
-                return;
-            }
-            
-            const match = currentMatches[matchIndex];
-            
-            if (!match) {
-                console.error('Match not found at index:', matchIndex, 'Available indices:', currentMatches.length);
-                alert('Error: Match not found. Please try again.');
-                return;
-            }
-            
-            console.log('Found match:', match);
-            
-            // Check if already added (double-check)
-            const exists = investments.some(inv => 
-                inv.name === match.name && 
-                inv.date.getTime() === match.date.getTime() && 
-                inv.type === 'CSV Database'
-            );
-            
-            if (exists) {
-                alert('This investment is already in the comparison');
-                return;
-            }
-            
-            // Add the investment
             const newInvestment = {
-                ...match,
+                name: name,
+                date: new Date(date),
+                oneYear: parseFloat(oneYear),
+                threeYears: parseFloat(threeYears),
+                fiveYears: parseFloat(fiveYears),
+                growthAA: parseFloat(growthAA),
+                defAA: parseFloat(defAA),
+                type: 'CSV Database',
                 id: Date.now() + Math.random()
             };
             
             investments.push(newInvestment);
-            
-            console.log('Added investment:', match.name);
-            console.log('Total investments now:', investments.length);
+            console.log('Investment added! Total investments:', investments.length);
+            console.log('All investments:', investments);
             
             updateComparison();
-            
-            // Update the button that was clicked
-            if (buttonElement) {
-                buttonElement.className = 'btn btn-secondary btn-sm';
-                buttonElement.disabled = true;
-                buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> Added';
-            }
-            
-            // Show success message
-            const matchesSection = document.getElementById('matchesSection');
-            const successMsg = document.createElement('div');
-            successMsg.className = 'alert alert-success mt-3';
-            successMsg.innerHTML = `<i class="bi bi-check-circle"></i> "${match.name}" added to comparison table!`;
-            matchesSection.appendChild(successMsg);
-            
-            setTimeout(() => {
-                if (successMsg.parentNode) {
-                    successMsg.remove();
+            alert(`"${name}" added to comparison!`);
+        };
+        
+        // Remove investment from portfolio
+        function removeInvestment(index) {
+            if (confirm('Are you sure you want to remove this investment from the comparison?')) {
+                investments.splice(index, 1);
+                updateComparison();
+                
+                if (investments.length === 0) {
+                    document.getElementById('matchesSection').style.display = 'none';
                 }
-            }, 3000);
+            }
+        }
+        
+        // Reset form
+        function resetForm() {
+            document.getElementById('investmentForm').reset();
+            document.getElementById('dateReturns').valueAsDate = new Date();
+            document.getElementById('growthAA').style.borderColor = '#e1e8ed';
+            document.getElementById('defAA').style.borderColor = '#e1e8ed';
         }
         
         // Update comparison table and chart
@@ -1028,26 +1106,6 @@
             });
             
             document.getElementById('chartSection').style.display = 'block';
-        }
-        
-        // Remove investment
-        function removeInvestment(index) {
-            if (confirm('Are you sure you want to remove this investment from the comparison?')) {
-                investments.splice(index, 1);
-                updateComparison();
-                
-                if (investments.length === 0) {
-                    document.getElementById('matchesSection').style.display = 'none';
-                }
-            }
-        }
-        
-        // Reset form
-        function resetForm() {
-            document.getElementById('investmentForm').reset();
-            document.getElementById('dateReturns').valueAsDate = new Date();
-            document.getElementById('growthAA').style.borderColor = '#e1e8ed';
-            document.getElementById('defAA').style.borderColor = '#e1e8ed';
         }
         
         // Generate Findex Analysis
