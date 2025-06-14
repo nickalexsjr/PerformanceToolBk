@@ -523,18 +523,19 @@
                         };
                         
                         return {
-                            name: row[0] || '',
-                            oneYear: parsePerformance(row[1]), // Column B
-                            threeYears: parsePerformance(row[2]), // Column C
-                            fiveYears: parsePerformance(row[3]), // Column D
-                            growthAA: parsePerformance(row[4]), // Column E
-                            defAA: parsePerformance(row[5]), // Column F
-                            date: parseDate(row[6]), // Column G
+                            name: row[0] || '',              // Column A: INVESTMENT NAME
+                            oneYear: parsePerformance(row[1]),    // Column B: 1 YEAR  
+                            threeYears: parsePerformance(row[2]), // Column C: 3 YEAR
+                            fiveYears: parsePerformance(row[3]),  // Column D: 5 YEAR
+                            growthAA: parsePerformance(row[4]),   // Column E: GROWTH AA
+                            defAA: parsePerformance(row[5]),      // Column F: DEF AA
+                            date: parseDate(row[6]),              // Column G: DATE
                             type: 'CSV Database'
                         };
                     }).filter(item => item.name && item.name.trim() !== '');
                     
                     console.log('Loaded', csvData.length, 'investments from CSV');
+                    console.log('Sample data:', csvData.slice(0, 2)); // Debug log
                 }
             });
         }
@@ -586,15 +587,31 @@
         
         // Find matches based on allocation and date
         function findMatches(investment) {
+            console.log('Looking for matches for:', investment);
+            console.log('Available CSV data count:', csvData.length);
+            
             const matches = csvData.filter(csvItem => {
-                if (!csvItem.growthAA || !csvItem.defAA || !csvItem.date) return false;
+                // Debug log for each item
+                console.log('Checking:', csvItem.name, 'Growth:', csvItem.growthAA, 'Def:', csvItem.defAA, 'Date:', csvItem.date);
+                
+                if (!csvItem.growthAA || !csvItem.defAA || !csvItem.date) {
+                    console.log('Skipping due to missing data');
+                    return false;
+                }
                 
                 // Check allocation variance (within 10%)
                 const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
                 const defDiff = Math.abs(csvItem.defAA - investment.defAA);
                 
-                return growthDiff <= 10 && defDiff <= 10;
+                console.log('Growth diff:', growthDiff, 'Def diff:', defDiff);
+                
+                const isMatch = growthDiff <= 10 && defDiff <= 10;
+                console.log('Is match:', isMatch);
+                
+                return isMatch;
             });
+            
+            console.log('Found', matches.length, 'initial matches');
             
             // Sort by date proximity
             matches.sort((a, b) => {
