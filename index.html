@@ -377,7 +377,7 @@
                 <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <label for="investmentName" class="form-label">Investment Name *</label>
-                        <input type="text" class="form-control" id="investmentName" placeholder="e.g., Australian Equity Fund" required>
+                        <input type="text" class="form-control" id="investmentName" required>
                         <small class="text-muted">Enter the full name of your investment</small>
                     </div>
                     <div class="col-md-6">
@@ -389,18 +389,18 @@
                 
                 <div class="input-grid">
                     <div class="input-group">
-                        <label for="oneYear">1 Year Return (%)*</label>
-                        <input type="number" class="form-control" id="oneYear" step="0.01" placeholder="0.00" required>
+                        <label for="oneYear">1 Year Return (%)</label>
+                        <input type="number" class="form-control" id="oneYear" step="0.01" placeholder="0.00">
                         <small>Annual return percentage</small>
                     </div>
                     <div class="input-group">
-                        <label for="threeYears">3 Year Return (%)*</label>
-                        <input type="number" class="form-control" id="threeYears" step="0.01" placeholder="0.00" required>
+                        <label for="threeYears">3 Year Return (%)</label>
+                        <input type="number" class="form-control" id="threeYears" step="0.01" placeholder="0.00">
                         <small>3-year annualized return</small>
                     </div>
                     <div class="input-group">
-                        <label for="fiveYears">5 Year Return (%)*</label>
-                        <input type="number" class="form-control" id="fiveYears" step="0.01" placeholder="0.00" required>
+                        <label for="fiveYears">5 Year Return (%)</label>
+                        <input type="number" class="form-control" id="fiveYears" step="0.01" placeholder="0.00">
                         <small>5-year annualized return</small>
                     </div>
                     <div class="input-group">
@@ -435,13 +435,13 @@
         <!-- Findex Analysis Section -->
         <div class="glass-card" id="findexAnalysisSection" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4><i class="bi bi-bar-chart-line"></i> Findex Professional Analysis</h4>
+                <h4><i class="bi bi-bar-chart-line"></i> Findex Performance Analysis</h4>
                 <button class="btn btn-primary" onclick="generateFindexAnalysis()">
                     <i class="bi bi-graph-up"></i> Generate Analysis
                 </button>
             </div>
             <div id="findexAnalysisContent">
-                <p class="text-muted text-center">Click "Generate Analysis" to receive professional investment insights</p>
+                <p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>
             </div>
         </div>
 
@@ -677,15 +677,21 @@
         function addManualInvestment() {
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
-            const oneYear = parseFloat(document.getElementById('oneYear').value);
-            const threeYears = parseFloat(document.getElementById('threeYears').value);
-            const fiveYears = parseFloat(document.getElementById('fiveYears').value);
+            const oneYear = document.getElementById('oneYear').value ? parseFloat(document.getElementById('oneYear').value) : null;
+            const threeYears = document.getElementById('threeYears').value ? parseFloat(document.getElementById('threeYears').value) : null;
+            const fiveYears = document.getElementById('fiveYears').value ? parseFloat(document.getElementById('fiveYears').value) : null;
             const growthAA = parseFloat(document.getElementById('growthAA').value);
             const defAA = parseFloat(document.getElementById('defAA').value);
             
-            // Validation
-            if (!name || !dateStr || isNaN(oneYear) || isNaN(threeYears) || isNaN(fiveYears) || isNaN(growthAA) || isNaN(defAA)) {
-                alert('Please fill in all required fields');
+            // Validation - only require name, date, and allocations
+            if (!name || !dateStr || isNaN(growthAA) || isNaN(defAA)) {
+                alert('Please fill in investment name, date, and allocation percentages');
+                return;
+            }
+            
+            // Check if at least one return value is provided
+            if (oneYear === null && threeYears === null && fiveYears === null) {
+                alert('Please provide at least one return value (1, 3, or 5 year)');
                 return;
             }
             
@@ -1111,8 +1117,8 @@
             let analysisHTML = `
                 <div class="findex-analysis">
                     <div class="analysis-header">
-                        <h5><i class="bi bi-award"></i> Findex Investment Analysis Report</h5>
-                        <small>Professional analysis based on ${investments.length} compared investments</small>
+                        <h5><i class="bi bi-award"></i> Findex Investment Performance Analysis</h5>
+                        <small>Comparative analysis based on ${investments.length} investments</small>
                     </div>
             `;
             
@@ -1123,7 +1129,7 @@
                 
                 analysisHTML += `
                     <div class="analysis-section">
-                        <h6><i class="bi bi-graph-up"></i> Performance Analysis</h6>
+                        <h6><i class="bi bi-graph-up"></i> Performance Comparison</h6>
                         <div class="row">
                             <div class="col-md-4">
                                 <strong>1 Year Performance:</strong><br>
@@ -1144,16 +1150,16 @@
                 // Risk Profile Analysis
                 analysisHTML += `
                     <div class="analysis-section">
-                        <h6><i class="bi bi-shield-check"></i> Risk Profile Assessment</h6>
+                        <h6><i class="bi bi-shield-check"></i> Risk Profile Analysis</h6>
                         <p>${generateRiskAnalysis(findexInvestments, otherInvestments)}</p>
                     </div>
                 `;
                 
-                // Key Insights
+                // Key Observations
                 analysisHTML += `
                     <div class="analysis-section">
-                        <h6><i class="bi bi-lightbulb"></i> Key Investment Insights</h6>
-                        ${generateKeyInsights(findexInvestments, otherInvestments, findexAvg, marketAvg)}
+                        <h6><i class="bi bi-lightbulb"></i> Key Performance Observations</h6>
+                        ${generateKeyObservations(findexInvestments, otherInvestments, findexAvg, marketAvg)}
                     </div>
                 `;
                 
@@ -1161,10 +1167,10 @@
                 // Only Findex/Manual entries
                 analysisHTML += `
                     <div class="analysis-section">
-                        <h6><i class="bi bi-info-circle"></i> Portfolio Assessment</h6>
-                        <p>Based on the current investment selection, the portfolio demonstrates a ${getPortfolioStyle(findexInvestments)} approach with balanced risk allocation.</p>
+                        <h6><i class="bi bi-info-circle"></i> Portfolio Summary</h6>
+                        <p>Current portfolio demonstrates a ${getPortfolioStyle(findexInvestments)} investment approach with ${findexInvestments[0].growthAA.toFixed(1)}% growth and ${findexInvestments[0].defAA.toFixed(1)}% defensive allocation.</p>
                         <div class="findex-highlight">
-                            <i class="bi bi-star"></i> <strong>Findex Recommendation:</strong> Consider diversifying with additional asset classes to optimize risk-adjusted returns while maintaining your current allocation strategy.
+                            <i class="bi bi-star"></i> <strong>Portfolio Characteristics:</strong> This allocation strategy balances growth potential with defensive positioning suitable for current market conditions.
                         </div>
                     </div>
                 `;
@@ -1172,20 +1178,20 @@
                 // Only market investments
                 analysisHTML += `
                     <div class="analysis-section">
-                        <h6><i class="bi bi-exclamation-triangle"></i> Market Comparison Analysis</h6>
-                        <p>The selected investments represent a diverse market sample. However, analysis suggests potential for improved risk-adjusted returns.</p>
+                        <h6><i class="bi bi-bar-chart"></i> Market Performance Summary</h6>
+                        <p>Analysis includes ${otherInvestments.length} market investments with varying risk profiles and performance characteristics.</p>
                         <div class="findex-highlight">
-                            <i class="bi bi-trending-up"></i> <strong>Findex Opportunity:</strong> Findex's actively managed portfolios have historically demonstrated superior risk-adjusted performance in similar market conditions.
+                            <i class="bi bi-graph-up-arrow"></i> <strong>Market Overview:</strong> Current selection represents diverse market opportunities across different asset allocations.
                         </div>
                     </div>
                 `;
             }
             
-            // Professional Recommendation
+            // Performance Summary
             analysisHTML += `
                 <div class="analysis-section">
-                    <h6><i class="bi bi-person-check"></i> Professional Recommendation</h6>
-                    ${generateProfessionalRecommendation(investments)}
+                    <h6><i class="bi bi-clipboard-data"></i> Performance Summary</h6>
+                    ${generatePerformanceSummary(investments)}
                 </div>
             `;
             
@@ -1249,74 +1255,124 @@
             }
         }
         
-        // Generate key insights
-        function generateKeyInsights(findexInv, otherInv, findexAvg, marketAvg) {
-            let insights = '<ul>';
+        // Generate key observations instead of insights
+        function generateKeyObservations(findexInv, otherInv, findexAvg, marketAvg) {
+            let observations = '<ul>';
             
-            // Performance consistency insight
+            // Performance consistency observation
             if (findexAvg.fiveYears && marketAvg.fiveYears) {
                 const longTermDiff = findexAvg.fiveYears - marketAvg.fiveYears;
                 if (longTermDiff > 0) {
-                    insights += `<li><strong>Long-term Excellence:</strong> Superior 5-year performance demonstrates consistent value creation over market cycles.</li>`;
+                    observations += `<li><strong>5-Year Performance:</strong> Findex investments outperformed by ${Math.abs(longTermDiff).toFixed(2)}% over the 5-year period.</li>`;
+                } else if (longTermDiff < 0) {
+                    observations += `<li><strong>5-Year Performance:</strong> Market investments outperformed by ${Math.abs(longTermDiff).toFixed(2)}% over the 5-year period.</li>`;
                 } else {
-                    insights += `<li><strong>Market Efficiency:</strong> Competitive long-term positioning with potential for enhanced alpha generation through active management.</li>`;
+                    observations += `<li><strong>5-Year Performance:</strong> Comparable performance achieved across both investment groups.</li>`;
                 }
             }
             
-            // Risk-adjusted returns
+            // Risk-adjusted performance
             if (findexAvg.growthAA && findexAvg.fiveYears) {
                 const riskAdjusted = findexAvg.fiveYears / (findexAvg.growthAA / 100);
-                insights += `<li><strong>Risk Efficiency:</strong> Achieving ${riskAdjusted.toFixed(2)}% return per unit of growth exposure indicates effective risk management.</li>`;
+                observations += `<li><strong>Risk-Adjusted Returns:</strong> Achieving ${riskAdjusted.toFixed(2)}% return per unit of growth exposure.</li>`;
             }
             
-            // Market positioning
-            insights += `<li><strong>Strategic Positioning:</strong> Current allocation strategy aligns with optimal risk-return characteristics for prevailing market conditions.</li>`;
+            // Short-term performance
+            if (findexAvg.oneYear && marketAvg.oneYear) {
+                const shortTermDiff = findexAvg.oneYear - marketAvg.oneYear;
+                if (Math.abs(shortTermDiff) > 0.5) {
+                    observations += `<li><strong>Recent Performance:</strong> 1-year returns show ${shortTermDiff > 0 ? 'Findex outperformance' : 'market outperformance'} of ${Math.abs(shortTermDiff).toFixed(2)}%.</li>`;
+                }
+            }
             
-            // Findex advantage
-            insights += `<li><strong>Active Management Value:</strong> Professional portfolio management and tactical allocation adjustments provide potential for enhanced risk-adjusted returns.</li>`;
+            // Allocation comparison
+            if (findexAvg.growthAA && marketAvg.growthAA) {
+                observations += `<li><strong>Asset Allocation:</strong> Findex portfolios maintain ${findexAvg.growthAA.toFixed(1)}% growth allocation versus ${marketAvg.growthAA.toFixed(1)}% market average.</li>`;
+            }
             
-            insights += '</ul>';
+            observations += '</ul>';
             
-            insights += `
-                <div class="findex-highlight">
-                    <i class="bi bi-trophy"></i> <strong>Findex Advantage:</strong> Our research indicates that similar risk profiles managed by Findex have historically delivered ${getRandomOutperformance()}% additional risk-adjusted returns through active management and strategic rebalancing.
-                </div>
-            `;
+            // Highlight superior Findex performance if applicable
+            const periods = ['oneYear', 'threeYears', 'fiveYears'];
+            let findexWins = 0;
+            let marketWins = 0;
             
-            return insights;
+            periods.forEach(period => {
+                if (findexAvg[period] && marketAvg[period]) {
+                    if (findexAvg[period] > marketAvg[period]) findexWins++;
+                    else if (marketAvg[period] > findexAvg[period]) marketWins++;
+                }
+            });
+            
+            if (findexWins > marketWins) {
+                observations += `
+                    <div class="findex-highlight">
+                        <i class="bi bi-trophy"></i> <strong>Performance Summary:</strong> Findex investments demonstrated superior performance in ${findexWins} out of ${findexWins + marketWins} measured time periods.
+                    </div>
+                `;
+            }
+            
+            return observations;
         }
         
-        // Generate professional recommendation
-        function generateProfessionalRecommendation(allInvestments) {
+        // Generate performance summary instead of recommendations
+        function generatePerformanceSummary(allInvestments) {
             const hasManual = allInvestments.some(inv => inv.type === 'Manual Entry');
             const hasFindex = allInvestments.some(inv => inv.name.toLowerCase().includes('findex') || inv.name.toLowerCase().includes('mda'));
             
-            if (hasManual && hasFindex) {
-                return `
-                    <p>Based on comprehensive analysis, the current investment approach shows merit. However, opportunities exist for optimization:</p>
+            let bestPerformers = {
+                oneYear: { inv: null, value: -Infinity },
+                threeYears: { inv: null, value: -Infinity },
+                fiveYears: { inv: null, value: -Infinity }
+            };
+            
+            allInvestments.forEach(inv => {
+                if (inv.oneYear !== null && inv.oneYear > bestPerformers.oneYear.value) {
+                    bestPerformers.oneYear = { inv: inv, value: inv.oneYear };
+                }
+                if (inv.threeYears !== null && inv.threeYears > bestPerformers.threeYears.value) {
+                    bestPerformers.threeYears = { inv: inv, value: inv.threeYears };
+                }
+                if (inv.fiveYears !== null && inv.fiveYears > bestPerformers.fiveYears.value) {
+                    bestPerformers.fiveYears = { inv: inv, value: inv.fiveYears };
+                }
+            });
+            
+            let summary = '<p><strong>Top Performers by Period:</strong></p><ul>';
+            
+            if (bestPerformers.oneYear.inv) {
+                summary += `<li>1 Year: ${bestPerformers.oneYear.inv.name} (${bestPerformers.oneYear.value.toFixed(2)}%)</li>`;
+            }
+            if (bestPerformers.threeYears.inv) {
+                summary += `<li>3 Years: ${bestPerformers.threeYears.inv.name} (${bestPerformers.threeYears.value.toFixed(2)}%)</li>`;
+            }
+            if (bestPerformers.fiveYears.inv) {
+                summary += `<li>5 Years: ${bestPerformers.fiveYears.inv.name} (${bestPerformers.fiveYears.value.toFixed(2)}%)</li>`;
+            }
+            
+            summary += '</ul>';
+            
+            // Highlight if Findex is among top performers
+            const findexIsTop = Object.values(bestPerformers).some(perf => 
+                perf.inv && (perf.inv.name.toLowerCase().includes('findex') || perf.inv.name.toLowerCase().includes('mda'))
+            );
+            
+            if (findexIsTop) {
+                summary += `
                     <div class="findex-highlight">
-                        <i class="bi bi-gear"></i> <strong>Optimization Opportunity:</strong> Consider consolidating similar holdings into Findex's professionally managed solutions to reduce complexity while potentially enhancing returns through economies of scale and expert oversight.
+                        <i class="bi bi-star"></i> <strong>Notable Performance:</strong> Findex investments featured among top performers across multiple time periods.
                     </div>
-                    <p><small><i class="bi bi-info-circle"></i> This analysis is based on historical performance and current market conditions. Future results may vary.</small></p>
-                `;
-            } else if (hasManual) {
-                return `
-                    <p>The manual investment selection demonstrates sound investment principles. To enhance potential outcomes:</p>
-                    <div class="findex-highlight">
-                        <i class="bi bi-plus-circle"></i> <strong>Enhancement Strategy:</strong> Complement existing holdings with Findex's institutional-grade portfolio management to access professional rebalancing, tax optimization, and strategic asset allocation expertise.
-                    </div>
-                    <p><small><i class="bi bi-info-circle"></i> Professional management may help optimize after-tax returns and reduce behavioral investment biases.</small></p>
-                `;
-            } else {
-                return `
-                    <p>Market comparison reveals opportunities for improved risk-adjusted performance:</p>
-                    <div class="findex-highlight">
-                        <i class="bi bi-star"></i> <strong>Findex Solution:</strong> Our actively managed portfolios combine institutional research capabilities with dynamic allocation strategies, historically delivering superior risk-adjusted returns in similar market environments.
-                    </div>
-                    <p><small><i class="bi bi-info-circle"></i> Consider discussing your specific objectives with a Findex advisor to explore customized solutions.</small></p>
                 `;
             }
+            
+            summary += `<p><small><i class="bi bi-info-circle"></i> This analysis is based on historical performance data. Past performance does not guarantee future results.</small></p>`;
+            
+            return summary;
         }
+        
+        // Remove the old functions
+        function generateKeyInsights() { return ''; }
+        function generateProfessionalRecommendation() { return ''; }
         
         // Helper functions
         function getPortfolioStyle(investments) {
