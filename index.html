@@ -645,9 +645,32 @@
             };
             
             investments.push(investment);
-            findMatches(investment);
+            console.log('Added manual investment:', investment);
+            
             updateComparison();
+            findMatchesForAllManualInvestments();
             resetForm();
+        }
+        
+        // Find matches for all manual investments (using average)
+        function findMatchesForAllManualInvestments() {
+            const manualInvestments = investments.filter(inv => inv.type === 'Manual Entry');
+            
+            if (manualInvestments.length === 0) {
+                document.getElementById('matchesSection').style.display = 'none';
+                return;
+            }
+            
+            // Calculate average profile for all manual investments
+            const avgProfile = {
+                growthAA: manualInvestments.reduce((sum, inv) => sum + inv.growthAA, 0) / manualInvestments.length,
+                defAA: manualInvestments.reduce((sum, inv) => sum + inv.defAA, 0) / manualInvestments.length,
+                date: new Date(manualInvestments.reduce((sum, inv) => sum + inv.date.getTime(), 0) / manualInvestments.length)
+            };
+            
+            console.log('Average profile for matching:', avgProfile);
+            
+            findMatches(avgProfile);
         }
         
         // Find matches based on allocation and date
