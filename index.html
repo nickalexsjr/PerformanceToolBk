@@ -534,12 +534,31 @@
                         
                         const parseDate = (dateStr) => {
                             if (!dateStr) return null;
+                            
+                            console.log('Parsing date string:', dateStr);
+                            
                             // Handle Australian date format (DD/MM/YYYY)
-                            const parts = dateStr.toString().split('/');
+                            const dateString = dateStr.toString().trim();
+                            const parts = dateString.split('/');
+                            
                             if (parts.length === 3) {
-                                return new Date(parts[2], parts[1] - 1, parts[0]);
+                                const day = parseInt(parts[0], 10);
+                                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript
+                                const year = parseInt(parts[2], 10);
+                                
+                                console.log('Date parts:', { day, month: month + 1, year });
+                                
+                                // Validate the parts
+                                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 2020 && year <= 2030) {
+                                    const parsedDate = new Date(year, month, day);
+                                    console.log('Parsed date:', parsedDate);
+                                    return parsedDate;
+                                }
                             }
-                            return new Date(dateStr);
+                            
+                            // Fallback to default Date parsing
+                            console.warn('Fallback date parsing for:', dateString);
+                            return new Date(dateString);
                         };
                         
                         // Try different possible header names
@@ -680,14 +699,42 @@
                 return;
             }
             
-            matchesList.innerHTML = matches.map((match, index) => {
+            // Filter matches to only show recent dates (within 6 months of user's date)
+            const userDate = investment.date.getTime();
+            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000; // 6 months in milliseconds
+            
+            const recentMatches = matches.filter(match => {
+                const dateDiff = Math.abs(match.date.getTime() - userDate);
+                return dateDiff <= sixMonthsMs;
+            });
+            
+            const displayMatches = recentMatches.slice(0, 8); // Show max 8 recent matches
+            
+            if (displayMatches.length === 0) {
+                matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
+                matchesSection.style.display = 'block';
+                return;
+            }
+            
+            matchesList.innerHTML = displayMatches.map((match, index) => {
                 const growthDiff = Math.abs(match.growthAA - investment.growthAA);
                 const defDiff = Math.abs(match.defAA - investment.defAA);
                 const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
                 const daysDiff = Math.round(dateDiff / (1000 * 60 * 60 * 24));
                 
+                // Check if already added
+                const alreadyAdded = investments.some(inv => 
+                    inv.name === match.name && 
+                    inv.date.getTime() === match.date.getTime() && 
+                    inv.type === 'CSV Database'
+                );
+                
+                const buttonClass = alreadyAdded ? 'btn-secondary' : 'btn-success';
+                const buttonText = alreadyAdded ? 'Added' : 'Add';
+                const buttonDisabled = alreadyAdded ? 'disabled' : '';
+                
                 return `
-                    <div class="dropdown-item" style="border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 10px; cursor: pointer;" onclick="addCSVMatch(${index}, ${JSON.stringify(match).replace(/"/g, '&quot;')})">
+                    <div class="dropdown-item" style="border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 10px;">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="mb-1">${match.name}</h6>
@@ -704,8 +751,8 @@
                                     </small>
                                 </div>
                             </div>
-                            <button class="btn btn-success btn-sm">
-                                <i class="bi bi-plus-circle"></i> Add
+                            <button class="btn ${buttonClass} btn-sm" ${buttonDisabled} onclick="addCSVMatch(${JSON.stringify(match).replace(/"/g, '&quot;')})">
+                                <i class="bi bi-${alreadyAdded ? 'check' : 'plus'}-circle"></i> ${buttonText}
                             </button>
                         </div>
                     </div>
@@ -716,20 +763,45 @@
         }
         
         // Add CSV match to comparison
-        function addCSVMatch(index, match) {
-            // Check if already added
-            const exists = investments.some(inv => inv.name === match.name && inv.type === 'CSV Database');
+        function addCSVMatch(match) {
+            // Check if already added (double-check)
+            const exists = investments.some(inv => 
+                inv.name === match.name && 
+                inv.date.getTime() === match.date.getTime() && 
+                inv.type === 'CSV Database'
+            );
+            
             if (exists) {
                 alert('This investment is already in the comparison');
                 return;
             }
             
+            // Add the investment
             investments.push({
                 ...match,
                 id: Date.now() + Math.random()
             });
             
             updateComparison();
+            
+            // Refresh the matches display to update button states
+            const lastManualEntry = investments.filter(inv => inv.type === 'Manual Entry').pop();
+            if (lastManualEntry) {
+                findMatches(lastManualEntry);
+            }
+            
+            // Show success message
+            const matchesSection = document.getElementById('matchesSection');
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success mt-3';
+            successMsg.innerHTML = '<i class="bi bi-check-circle"></i> Investment added successfully!';
+            matchesSection.appendChild(successMsg);
+            
+            setTimeout(() => {
+                if (successMsg.parentNode) {
+                    successMsg.remove();
+                }
+            }, 3000);
         }
         
         // Update comparison table and chart
