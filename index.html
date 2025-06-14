@@ -656,11 +656,7 @@
             console.log('Available CSV data count:', csvData.length);
             
             const matches = csvData.filter(csvItem => {
-                // Debug log for each item
-                console.log('Checking:', csvItem.name, 'Growth:', csvItem.growthAA, 'Def:', csvItem.defAA, 'Date:', csvItem.date);
-                
                 if (!csvItem.growthAA || !csvItem.defAA || !csvItem.date) {
-                    console.log('Skipping due to missing data');
                     return false;
                 }
                 
@@ -668,24 +664,40 @@
                 const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
                 const defDiff = Math.abs(csvItem.defAA - investment.defAA);
                 
-                console.log('Growth diff:', growthDiff, 'Def diff:', defDiff);
-                
-                const isMatch = growthDiff <= 10 && defDiff <= 10;
-                console.log('Is match:', isMatch);
-                
-                return isMatch;
+                return growthDiff <= 10 && defDiff <= 10;
             });
             
             console.log('Found', matches.length, 'initial matches');
             
-            // Sort by date proximity
-            matches.sort((a, b) => {
+            // Group by investment name and keep only the closest date for each
+            const uniqueMatches = {};
+            matches.forEach(match => {
+                const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
+                
+                if (!uniqueMatches[match.name] || dateDiff < uniqueMatches[match.name].dateDiff) {
+                    uniqueMatches[match.name] = {
+                        ...match,
+                        dateDiff: dateDiff
+                    };
+                }
+            });
+            
+            // Convert back to array and sort by date proximity
+            const filteredMatches = Object.values(uniqueMatches).map(match => {
+                // Remove the dateDiff property we added for comparison
+                const { dateDiff, ...cleanMatch } = match;
+                return cleanMatch;
+            });
+            
+            filteredMatches.sort((a, b) => {
                 const diffA = Math.abs(a.date.getTime() - investment.date.getTime());
                 const diffB = Math.abs(b.date.getTime() - investment.date.getTime());
                 return diffA - diffB;
             });
             
-            displayMatches(matches.slice(0, 10), investment); // Show top 10 matches
+            console.log('Filtered to', filteredMatches.length, 'unique matches');
+            
+            displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
         
         // Display matches
@@ -751,7 +763,7 @@
                                     </small>
                                 </div>
                             </div>
-                            <button class="btn ${buttonClass} btn-sm" ${buttonDisabled} onclick="addCSVMatch(${JSON.stringify(match).replace(/"/g, '&quot;')})">
+                            <button class="btn ${buttonClass} btn-sm" ${buttonDisabled} onclick="addCSVMatch(this, ${index})">
                                 <i class="bi bi-${alreadyAdded ? 'check' : 'plus'}-circle"></i> ${buttonText}
                             </button>
                         </div>
@@ -763,7 +775,14 @@
         }
         
         // Add CSV match to comparison
-        function addCSVMatch(match) {
+        function addCSVMatch(buttonElement, matchIndex) {
+            const match = currentMatches[matchIndex];
+            
+            if (!match) {
+                console.error('Match not found at index:', matchIndex);
+                return;
+            }
+            
             // Check if already added (double-check)
             const exists = investments.some(inv => 
                 inv.name === match.name && 
@@ -782,19 +801,20 @@
                 id: Date.now() + Math.random()
             });
             
+            console.log('Added investment:', match.name);
+            
             updateComparison();
             
-            // Refresh the matches display to update button states
-            const lastManualEntry = investments.filter(inv => inv.type === 'Manual Entry').pop();
-            if (lastManualEntry) {
-                findMatches(lastManualEntry);
-            }
+            // Update the button that was clicked
+            buttonElement.className = 'btn btn-secondary btn-sm';
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> Added';
             
             // Show success message
             const matchesSection = document.getElementById('matchesSection');
             const successMsg = document.createElement('div');
             successMsg.className = 'alert alert-success mt-3';
-            successMsg.innerHTML = '<i class="bi bi-check-circle"></i> Investment added successfully!';
+            successMsg.innerHTML = `<i class="bi bi-check-circle"></i> "${match.name}" added successfully!`;
             matchesSection.appendChild(successMsg);
             
             setTimeout(() => {
