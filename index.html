@@ -669,23 +669,33 @@
             
             console.log('Found', matches.length, 'initial matches');
             
-            // Group by investment name and keep only the closest date for each
+            // Normalize investment names to handle missing brackets and variations
+            const normalizeInvestmentName = (name) => {
+                return name.trim()
+                    .replace(/\s*\([^)]*\)?\s*$/, '') // Remove trailing parentheses (complete or incomplete)
+                    .replace(/\s+/g, ' ') // Normalize whitespace
+                    .toLowerCase();
+            };
+            
+            // Group by normalized investment name and keep only the closest date for each
             const uniqueMatches = {};
             matches.forEach(match => {
+                const normalizedName = normalizeInvestmentName(match.name);
                 const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
                 
-                if (!uniqueMatches[match.name] || dateDiff < uniqueMatches[match.name].dateDiff) {
-                    uniqueMatches[match.name] = {
+                if (!uniqueMatches[normalizedName] || dateDiff < uniqueMatches[normalizedName].dateDiff) {
+                    uniqueMatches[normalizedName] = {
                         ...match,
-                        dateDiff: dateDiff
+                        dateDiff: dateDiff,
+                        normalizedName: normalizedName
                     };
                 }
             });
             
             // Convert back to array and sort by date proximity
             const filteredMatches = Object.values(uniqueMatches).map(match => {
-                // Remove the dateDiff property we added for comparison
-                const { dateDiff, ...cleanMatch } = match;
+                // Remove the dateDiff and normalizedName properties we added for comparison
+                const { dateDiff, normalizedName, ...cleanMatch } = match;
                 return cleanMatch;
             });
             
@@ -695,7 +705,7 @@
                 return diffA - diffB;
             });
             
-            console.log('Filtered to', filteredMatches.length, 'unique matches');
+            console.log('Filtered to', filteredMatches.length, 'unique matches (normalized names)');
             
             displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
@@ -774,14 +784,27 @@
             matchesSection.style.display = 'block';
         }
         
-        // Add CSV match to comparison
+        // Add CSV match to comparison  
         function addCSVMatch(buttonElement, matchIndex) {
+            console.log('addCSVMatch called with matchIndex:', matchIndex);
+            console.log('currentMatches length:', currentMatches.length);
+            console.log('currentMatches:', currentMatches);
+            
+            if (!currentMatches || currentMatches.length === 0) {
+                console.error('No current matches available');
+                alert('Error: No matches data available. Please try searching again.');
+                return;
+            }
+            
             const match = currentMatches[matchIndex];
             
             if (!match) {
-                console.error('Match not found at index:', matchIndex);
+                console.error('Match not found at index:', matchIndex, 'Available indices:', currentMatches.length);
+                alert('Error: Match not found. Please try again.');
                 return;
             }
+            
+            console.log('Found match:', match);
             
             // Check if already added (double-check)
             const exists = investments.some(inv => 
@@ -796,25 +819,30 @@
             }
             
             // Add the investment
-            investments.push({
+            const newInvestment = {
                 ...match,
                 id: Date.now() + Math.random()
-            });
+            };
+            
+            investments.push(newInvestment);
             
             console.log('Added investment:', match.name);
+            console.log('Total investments now:', investments.length);
             
             updateComparison();
             
             // Update the button that was clicked
-            buttonElement.className = 'btn btn-secondary btn-sm';
-            buttonElement.disabled = true;
-            buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> Added';
+            if (buttonElement) {
+                buttonElement.className = 'btn btn-secondary btn-sm';
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = '<i class="bi bi-check-circle"></i> Added';
+            }
             
             // Show success message
             const matchesSection = document.getElementById('matchesSection');
             const successMsg = document.createElement('div');
             successMsg.className = 'alert alert-success mt-3';
-            successMsg.innerHTML = `<i class="bi bi-check-circle"></i> "${match.name}" added successfully!`;
+            successMsg.innerHTML = `<i class="bi bi-check-circle"></i> "${match.name}" added to comparison table!`;
             matchesSection.appendChild(successMsg);
             
             setTimeout(() => {
