@@ -494,7 +494,7 @@
                 });
         }
         
-        // Parse CSV data with new column structure
+        // Parse CSV data with correct column structure
         function parseCSV(csvData) {
             Papa.parse(csvData, {
                 header: false,
@@ -502,10 +502,12 @@
                 complete: function(results) {
                     const data = results.data;
                     
+                    console.log('Raw CSV data sample:', data.slice(0, 3));
+                    
                     // Skip header row if it exists
                     const startIndex = (data[0] && data[0][0] === 'INVESTMENT NAME') ? 1 : 0;
                     
-                    csvData = data.slice(startIndex).map(row => {
+                    csvData = data.slice(startIndex).map((row, index) => {
                         const parsePerformance = (value) => {
                             if (!value || value === '' || value === 'N/A') return null;
                             const parsed = parseFloat(value);
@@ -515,15 +517,15 @@
                         const parseDate = (dateStr) => {
                             if (!dateStr) return null;
                             // Handle Australian date format (DD/MM/YYYY)
-                            const parts = dateStr.split('/');
+                            const parts = dateStr.toString().split('/');
                             if (parts.length === 3) {
                                 return new Date(parts[2], parts[1] - 1, parts[0]);
                             }
                             return new Date(dateStr);
                         };
                         
-                        return {
-                            name: row[0] || '',              // Column A: INVESTMENT NAME
+                        const investment = {
+                            name: row[0] || '',                   // Column A: INVESTMENT NAME
                             oneYear: parsePerformance(row[1]),    // Column B: 1 YEAR  
                             threeYears: parsePerformance(row[2]), // Column C: 3 YEAR
                             fiveYears: parsePerformance(row[3]),  // Column D: 5 YEAR
@@ -532,10 +534,28 @@
                             date: parseDate(row[6]),              // Column G: DATE
                             type: 'CSV Database'
                         };
-                    }).filter(item => item.name && item.name.trim() !== '');
+                        
+                        // Debug log for first few entries
+                        if (index < 3) {
+                            console.log(`Row ${index + startIndex}:`, {
+                                name: investment.name,
+                                growth: investment.growthAA,
+                                def: investment.defAA,
+                                date: investment.date,
+                                rawDate: row[6]
+                            });
+                        }
+                        
+                        return investment;
+                    }).filter(item => {
+                        const isValid = item.name && item.name.trim() !== '' && 
+                                       item.growthAA !== null && item.defAA !== null && 
+                                       item.date !== null;
+                        return isValid;
+                    });
                     
-                    console.log('Loaded', csvData.length, 'investments from CSV');
-                    console.log('Sample data:', csvData.slice(0, 2)); // Debug log
+                    console.log('Loaded', csvData.length, 'valid investments from CSV');
+                    console.log('First valid investment:', csvData[0]);
                 }
             });
         }
