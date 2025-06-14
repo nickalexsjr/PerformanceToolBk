@@ -474,40 +474,58 @@
         
         // Load CSV data
         function loadCSVData() {
-            fetch('./2025(in).csv')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load CSV file');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    parseCSV(data);
-                    document.getElementById('loadingState').style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Error loading CSV:', error);
+            // Try multiple possible paths
+            const csvPaths = ['./2025(in).csv', '2025(in).csv', 'PerformanceToolBk/2025(in).csv'];
+            
+            function tryLoadCSV(pathIndex = 0) {
+                if (pathIndex >= csvPaths.length) {
                     document.getElementById('loadingState').innerHTML = `
                         <i class="bi bi-exclamation-circle text-danger"></i>
                         <div class="text-danger">Error loading investment database. Please ensure 2025(in).csv is available.</div>
+                        <div class="text-muted mt-2">Tried paths: ${csvPaths.join(', ')}</div>
                     `;
-                });
+                    return;
+                }
+                
+                fetch(csvPaths[pathIndex])
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Failed to load CSV from ${csvPaths[pathIndex]}`);
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log(`Successfully loaded CSV from: ${csvPaths[pathIndex]}`);
+                        parseCSV(data);
+                        document.getElementById('loadingState').style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.warn(`Failed to load from ${csvPaths[pathIndex]}:`, error);
+                        tryLoadCSV(pathIndex + 1);
+                    });
+            }
+            
+            tryLoadCSV();
         }
         
         // Parse CSV data with correct column structure
-        function parseCSV(csvData) {
-            Papa.parse(csvData, {
-                header: false,
+        function parseCSV(csvText) {
+            Papa.parse(csvText, {
+                header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    const data = results.data;
+                    console.log('Papa parse results:', results);
                     
-                    console.log('Raw CSV data sample:', data.slice(0, 3));
+                    if (results.data.length === 0) {
+                        console.error('No data found in CSV');
+                        return;
+                    }
                     
-                    // Skip header row if it exists
-                    const startIndex = (data[0] && data[0][0] === 'INVESTMENT NAME') ? 1 : 0;
+                    // Check the headers
+                    const headers = Object.keys(results.data[0]);
+                    console.log('CSV Headers:', headers);
                     
-                    csvData = data.slice(startIndex).map((row, index) => {
+                    csvData = results.data.map((row, index) => {
                         const parsePerformance = (value) => {
                             if (!value || value === '' || value === 'N/A') return null;
                             const parsed = parseFloat(value);
@@ -524,38 +542,46 @@
                             return new Date(dateStr);
                         };
                         
+                        // Try different possible header names
+                        const name = row['INVESTMENT NAME'] || row['Investment Name'] || row['Name'] || '';
+                        const oneYear = parsePerformance(row['1 YEAR'] || row['1Y'] || row['1 Year']);
+                        const threeYears = parsePerformance(row['3 YEAR'] || row['3Y'] || row['3 Years']);
+                        const fiveYears = parsePerformance(row['5 YEAR'] || row['5Y'] || row['5 Years']);
+                        const growthAA = parsePerformance(row['GROWTH AA'] || row['Growth AA'] || row['Growth']);
+                        const defAA = parsePerformance(row['DEF AA'] || row['Def AA'] || row['Defensive']);
+                        const date = parseDate(row['DATE'] || row['Date'] || row['date']);
+                        
                         const investment = {
-                            name: row[0] || '',                   // Column A: INVESTMENT NAME
-                            oneYear: parsePerformance(row[1]),    // Column B: 1 YEAR  
-                            threeYears: parsePerformance(row[2]), // Column C: 3 YEAR
-                            fiveYears: parsePerformance(row[3]),  // Column D: 5 YEAR
-                            growthAA: parsePerformance(row[4]),   // Column E: GROWTH AA
-                            defAA: parsePerformance(row[5]),      // Column F: DEF AA
-                            date: parseDate(row[6]),              // Column G: DATE
+                            name: name,
+                            oneYear: oneYear,
+                            threeYears: threeYears,
+                            fiveYears: fiveYears,
+                            growthAA: growthAA,
+                            defAA: defAA,
+                            date: date,
                             type: 'CSV Database'
                         };
                         
                         // Debug log for first few entries
                         if (index < 3) {
-                            console.log(`Row ${index + startIndex}:`, {
-                                name: investment.name,
-                                growth: investment.growthAA,
-                                def: investment.defAA,
-                                date: investment.date,
-                                rawDate: row[6]
-                            });
+                            console.log(`Investment ${index}:`, investment);
                         }
                         
                         return investment;
                     }).filter(item => {
                         const isValid = item.name && item.name.trim() !== '' && 
                                        item.growthAA !== null && item.defAA !== null && 
-                                       item.date !== null;
+                                       item.date !== null && !isNaN(item.date.getTime());
+                        
+                        if (!isValid && item.name) {
+                            console.warn('Filtered out invalid item:', item);
+                        }
+                        
                         return isValid;
                     });
                     
-                    console.log('Loaded', csvData.length, 'valid investments from CSV');
-                    console.log('First valid investment:', csvData[0]);
+                    console.log('Final processed data:', csvData.length, 'valid investments');
+                    console.log('Sample valid investment:', csvData[0]);
                 }
             });
         }
