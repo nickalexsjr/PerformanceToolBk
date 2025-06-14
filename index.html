@@ -440,10 +440,21 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     
     <script>
-        // Global variables
+        // GLOBAL VARIABLES AND INITIALIZATION
         let csvData = [];
         let investments = [];
         let performanceChart = null;
+        let currentMatches = []; // Store current matches globally
+        
+        // COMPLETELY DESTROY ANY OLD FUNCTIONS
+        if (typeof window.addCSVMatch !== 'undefined') {
+            console.warn('OLD addCSVMatch FOUND - DESTROYING IT');
+            delete window.addCSVMatch;
+        }
+        if (typeof addCSVMatch !== 'undefined') {
+            console.warn('OLD addCSVMatch FOUND - DESTROYING IT');
+            addCSVMatch = undefined;
+        }
         
         // Load CSV data automatically when page loads
         document.addEventListener('DOMContentLoaded', function() {
