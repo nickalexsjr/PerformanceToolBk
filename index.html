@@ -713,6 +713,12 @@
             // Update any existing investments to reflect mode change
             updateComparison();
             
+            // Regenerate analysis if it exists
+            const analysisContent = document.getElementById('findexAnalysisContent');
+            if (analysisContent.innerHTML.includes('Performance Analysis Report')) {
+                generateFindexAnalysis();
+            }
+            
             // Update matches section if visible
             if (document.getElementById('matchesSection').style.display !== 'none') {
                 findMatchesForAllManualInvestments();
@@ -1554,7 +1560,7 @@
                         <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
                         
                         <div class="findex-highlight">
-                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? '$' + manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
                         </div>
                     </div>
                 </div>
