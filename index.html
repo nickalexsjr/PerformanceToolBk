@@ -32,10 +32,22 @@
             margin-bottom: 30px;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .findex-logo {
+            height: 60px;
+            width: auto;
+            filter: brightness(0) invert(1);
+            opacity: 0.9;
+        }
+
         h1 {
             color: white;
             font-weight: 700;
-            text-align: center;
             font-size: 2.8rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             margin: 0;
@@ -470,6 +482,16 @@
                 gap: 15px;
             }
 
+            .header-left {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .findex-logo {
+                height: 45px;
+            }
+
             .top-controls {
                 flex-direction: column;
                 width: 100%;
@@ -485,7 +507,10 @@
 <body>
     <div class="main-container">
         <div class="header-controls">
-            <h1><i class="bi bi-graph-up-arrow"></i> Investment Performance Tool</h1>
+            <div class="header-left">
+                <img src="https://i.imgur.com/mVpt93y.png" alt="Findex Logo" class="findex-logo">
+                <h1><i class="bi bi-graph-up-arrow"></i> Investment Performance Tool</h1>
+            </div>
             
             <div class="top-controls">
                 <div class="mode-toggle">
@@ -1537,8 +1562,6 @@
         
         // Generate analysis text based on template
         function generateAnalysisText(manual, recommended) {
-            const AX = formatInvestmentName(manual.name);
-            const BX = formatInvestmentName(recommended.name);
             const investmentValue = manual.value || 100000; // Default to $100k if no value provided
             
             let analysis = '';
@@ -1546,52 +1569,55 @@
             // 1 Year Analysis
             if (manual.oneYear !== null && recommended.oneYear !== null) {
                 const diff1Y = recommended.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? BX : AX;
+                const higherPerformer = diff1Y > 0 ? 'Investment B' : 'Investment A';
+                const lowerPerformer = diff1Y > 0 ? 'Investment A' : 'Investment B';
                 const absDiff1Y = Math.abs(diff1Y);
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff1Y)}% (estimated $${Math.round(dollarDiff1Y).toLocaleString()}) over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff1Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             // 3 Year Analysis
             if (manual.threeYears !== null && recommended.threeYears !== null) {
                 const diff3Y = recommended.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? BX : AX;
+                const higherPerformer = diff3Y > 0 ? 'Investment B' : 'Investment A';
+                const lowerPerformer = diff3Y > 0 ? 'Investment A' : 'Investment B';
                 const absDiff3Y = Math.abs(diff3Y);
                 // Compound the difference over 3 years
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff3Y)}% annualized (estimated $${Math.round(dollarDiff3Y).toLocaleString()} cumulative difference) over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff3Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
             // 5 Year Analysis
             if (manual.fiveYears !== null && recommended.fiveYears !== null) {
                 const diff5Y = recommended.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? BX : AX;
+                const higherPerformer = diff5Y > 0 ? 'Investment B' : 'Investment A';
+                const lowerPerformer = diff5Y > 0 ? 'Investment A' : 'Investment B';
                 const absDiff5Y = Math.abs(diff5Y);
                 // Compound the difference over 5 years
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff5Y)}% annualized (estimated $${Math.round(dollarDiff5Y).toLocaleString()} cumulative difference) over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff5Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
             // Risk Profile Comparison
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             analysis += `RISK PROFILE COMPARISON:\n`;
-            analysis += `${AX}: ${Math.round(manual.growthAA)}% Growth, ${Math.round(manual.defAA)}% Defensive\n`;
-            analysis += `${BX}: ${Math.round(recommended.growthAA)}% Growth, ${Math.round(recommended.defAA)}% Defensive\n`;
+            analysis += `Investment A: ${Math.round(manual.growthAA)}% Growth, ${Math.round(manual.defAA)}% Defensive\n`;
+            analysis += `Investment B: ${Math.round(recommended.growthAA)}% Growth, ${Math.round(recommended.defAA)}% Defensive\n`;
             
             if (growthDiff < 5) {
                 analysis += `Both investments maintain similar risk profiles with comparable asset allocation.`;
             } else if (manual.growthAA > recommended.growthAA) {
-                analysis += `${AX} has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
+                analysis += `Investment A has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
             } else {
-                analysis += `${BX} has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
+                analysis += `Investment B has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
             }
             
             return analysis;
