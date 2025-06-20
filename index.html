@@ -1560,7 +1560,7 @@
                         <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
                         
                         <div class="findex-highlight">
-                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided ($${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
                         </div>
                     </div>
                 </div>
@@ -1588,7 +1588,7 @@
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             // 3 Year Analysis
@@ -1602,7 +1602,7 @@
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
             // 5 Year Analysis
@@ -1616,7 +1616,7 @@
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
             // Risk Profile Comparison
