@@ -43,6 +43,22 @@
             width: auto;
             filter: brightness(0) invert(1);
             opacity: 0.9;
+            max-width: 120px;
+        }
+
+        .findex-logo-fallback {
+            height: 60px;
+            width: 120px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+            letter-spacing: 1px;
+            text-shadow: none;
         }
 
         h1 {
@@ -490,6 +506,13 @@
 
             .findex-logo {
                 height: 45px;
+                max-width: 90px;
+            }
+
+            .findex-logo-fallback {
+                height: 45px;
+                width: 90px;
+                font-size: 14px;
             }
 
             .top-controls {
@@ -508,7 +531,11 @@
     <div class="main-container">
         <div class="header-controls">
             <div class="header-left">
-                <img src="https://i.imgur.com/mVpt93y.png" alt="Findex Logo" class="findex-logo">
+                <img src="https://imgur.com/mVpt93y.png" alt="Findex Logo" class="findex-logo" 
+                     onerror="this.onerror=null; this.src='https://i.imgur.com/mVpt93y.png';" 
+                     onload="this.style.display='block'; document.getElementById('findexFallback').style.display='none';"
+                     style="display: none;">
+                <div id="findexFallback" class="findex-logo-fallback">FINDEX</div>
                 <h1><i class="bi bi-graph-up-arrow"></i> Investment Performance Tool</h1>
             </div>
             
