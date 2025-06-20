@@ -841,7 +841,7 @@
             
             // Header
             doc.setFontSize(20);
-            doc.text('Investment Performance Report', 20, 30);
+            doc.text('Findex Investment Performance Tool', 20, 30);
             
             const clientName = document.getElementById('clientName').value.trim();
             if (clientName) {
@@ -1578,7 +1578,7 @@
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff1Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             // 3 Year Analysis
@@ -1592,7 +1592,7 @@
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff3Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
             // 5 Year Analysis
@@ -1606,21 +1606,21 @@
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${Math.round(absDiff5Y)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
             // Risk Profile Comparison
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             analysis += `RISK PROFILE COMPARISON:\n`;
-            analysis += `Investment A: ${Math.round(manual.growthAA)}% Growth, ${Math.round(manual.defAA)}% Defensive\n`;
-            analysis += `Investment B: ${Math.round(recommended.growthAA)}% Growth, ${Math.round(recommended.defAA)}% Defensive\n`;
+            analysis += `Investment A: ${manual.growthAA.toFixed(2)}% Growth, ${manual.defAA.toFixed(2)}% Defensive\n`;
+            analysis += `Investment B: ${recommended.growthAA.toFixed(2)}% Growth, ${recommended.defAA.toFixed(2)}% Defensive\n`;
             
             if (growthDiff < 5) {
                 analysis += `Both investments maintain similar risk profiles with comparable asset allocation.`;
             } else if (manual.growthAA > recommended.growthAA) {
-                analysis += `Investment A has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
+                analysis += `Investment A has a more growth-oriented allocation (+${growthDiff.toFixed(2)}% growth exposure).`;
             } else {
-                analysis += `Investment B has a more growth-oriented allocation (+${Math.round(growthDiff)}% growth exposure).`;
+                analysis += `Investment B has a more growth-oriented allocation (+${growthDiff.toFixed(2)}% growth exposure).`;
             }
             
             return analysis;
