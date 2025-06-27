@@ -290,31 +290,55 @@
 
         .comparison-table {
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
+            border: 1px solid #e9ecef;
         }
 
         .table {
             margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
         .table thead th {
-            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
-            color: white;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            color: #2c3e50;
             border: none;
-            padding: 15px 12px;
-            font-weight: 600;
+            padding: 18px 15px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: 3px solid #dc3545;
+            position: relative;
+        }
+
+        .table thead th:first-child {
+            text-align: left;
+        }
+
+        .table thead th:last-child {
             text-align: center;
         }
 
         .table tbody td {
-            padding: 12px;
+            padding: 15px;
             border-bottom: 1px solid #f0f0f0;
             text-align: center;
             vertical-align: middle;
-            background: white; /* Default white background */
+            background: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .table tbody td:first-child {
+            text-align: left;
+            font-weight: 700;
+            color: #2c3e50;
         }
 
         .table tbody tr:hover {
@@ -322,19 +346,35 @@
         }
 
         .table tbody tr:hover td {
-            background: #f8f9fa; /* Maintain hover effect */
+            background: #f8f9fa;
         }
 
         .performance-high {
             background: #d4edda !important;
             color: #155724;
-            font-weight: 600;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .performance-high::before {
+            content: '↑';
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 5px;
         }
 
         .performance-low {
             background: #f8d7da !important;
             color: #721c24;
-            font-weight: 600;
+            font-weight: 700;
+            position: relative;
+        }
+
+        .performance-low::before {
+            content: '↓';
+            color: #dc3545;
+            font-weight: bold;
+            margin-right: 5px;
         }
 
         .manual-entry {
@@ -344,73 +384,86 @@
         .csv-entry {
         }
 
-        .match-card {
+        /* Fixed match display styles */
+        .matches-table {
             background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
+            border-radius: 15px;
+            overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
         }
 
-        .match-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .match-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .match-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin: 0;
-        }
-
-        .match-metrics {
+        .matches-table-header {
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
+            color: white;
+            padding: 15px;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
             gap: 15px;
-            margin-bottom: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .metric-item {
-            text-align: center;
-            padding: 10px;
+        .matches-table-row {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .matches-table-row:hover {
             background: #f8f9fa;
-            border-radius: 8px;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .metric-label {
-            font-size: 12px;
-            color: #6c757d;
-            font-weight: 500;
-            margin-bottom: 3px;
+        .matches-table-row:last-child {
+            border-bottom: none;
         }
 
-        .metric-value {
-            font-size: 16px;
+        .match-name {
             font-weight: 700;
             color: #2c3e50;
-        }
-
-        .allocation-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
             font-size: 14px;
-            color: #6c757d;
         }
 
-        .match-actions {
-            display: flex;
-            justify-content: flex-end;
+        .match-value {
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .match-add-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .match-add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .match-add-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .chart-container {
@@ -604,6 +657,24 @@
             .disclaimer {
                 page-break-before: always;
             }
+
+            /* Print-specific form layout fixes */
+            .input-grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 15px !important;
+                align-items: start !important;
+            }
+
+            .input-group {
+                break-inside: avoid !important;
+            }
+
+            .row {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 15px !important;
+            }
         }
 
         @media (max-width: 768px) {
@@ -652,9 +723,15 @@
                 justify-content: center;
             }
 
-            .match-metrics {
+            .matches-table-header,
+            .matches-table-row {
                 grid-template-columns: 1fr;
                 gap: 10px;
+                text-align: center;
+            }
+
+            .match-name {
+                text-align: center;
             }
         }
     </style>
@@ -1492,14 +1569,14 @@
             const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
             if (button) {
                 button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
-                button.className = 'btn btn-secondary btn-sm';
+                button.className = 'match-add-btn';
                 button.disabled = true;
             }
             
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         };
         
-        // Display matches exactly like image 2 - single row format
+        // Display matches in the new clean table format
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1533,17 +1610,18 @@
             // Update currentMatches to only include displayed matches
             currentMatches = displayMatches;
             
-            // Add header row
+            // Create the clean table layout
             let html = `
-                <div class="matches-header">
-                    <div class="matches-header-item">Investment Name</div>
-                    <div class="matches-header-item">1yr</div>
-                    <div class="matches-header-item">3yr</div>
-                    <div class="matches-header-item">5yr</div>
-                    <div class="matches-header-item">Growth AA</div>
-                    <div class="matches-header-item">Def AA</div>
-                    <div class="matches-header-item">Actions</div>
-                </div>
+                <div class="matches-table">
+                    <div class="matches-table-header">
+                        <div>Investment Name</div>
+                        <div>1yr</div>
+                        <div>3yr</div>
+                        <div>5yr</div>
+                        <div>Growth AA</div>
+                        <div>Def AA</div>
+                        <div>Actions</div>
+                    </div>
             `;
             
             displayMatches.forEach((match, index) => {
@@ -1558,22 +1636,26 @@
                 const displayName = formatInvestmentName(match.name);
                 
                 html += `
-                    <div class="match-container">
-                        <div class="match-name-header">${displayName}</div>
-                        <div class="match-value-number">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value-number">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value-number">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value-number">${match.growthAA.toFixed(1)}%</div>
-                        <div class="match-value-number">${match.defAA.toFixed(1)}%</div>
-                        <button 
-                            class="match-add-button" 
-                            onclick="addCSVMatch(${index})"
-                            ${alreadyAdded ? 'disabled' : ''}>
-                            ${alreadyAdded ? 'Added' : 'Add'}
-                        </button>
+                    <div class="matches-table-row">
+                        <div class="match-name">${displayName}</div>
+                        <div class="match-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value">${match.growthAA.toFixed(1)}%</div>
+                        <div class="match-value">${match.defAA.toFixed(1)}%</div>
+                        <div class="match-value">
+                            <button 
+                                class="match-add-btn" 
+                                onclick="addCSVMatch(${index})"
+                                ${alreadyAdded ? 'disabled' : ''}>
+                                ${alreadyAdded ? 'Added' : 'Add'}
+                            </button>
+                        </div>
                     </div>
                 `;
             });
+            
+            html += '</div>';
             
             matchesList.innerHTML = html;
             matchesSection.style.display = 'block';
@@ -1681,7 +1763,7 @@
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
@@ -1867,13 +1949,13 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            // Portfolio Comparison - Updated format as requested
+            // Portfolio Comparison - Updated format with growth difference percentage
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
             const higherGrowthPercentage = Math.max(manual.growthAA, recommended.growthAA);
             
             analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${higherGrowthPercentage.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${higherGrowthPercentage.toFixed(1)}%. The difference in growth allocation between the two investments is ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
