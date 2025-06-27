@@ -1362,24 +1362,27 @@
                             </button>
                         </div>
                         
-                        <div class="match-metrics">
-                            <div class="metric-item">
-                                <div class="metric-label">1yr</div>
-                                <div class="metric-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                        <div style="display: flex; justify-content: flex-start; gap: 40px; margin-bottom: 15px;">
+                            <div>
+                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">1yr</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
                             </div>
-                            <div class="metric-item">
-                                <div class="metric-label">3yr</div>
-                                <div class="metric-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                            <div>
+                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">3yr</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
                             </div>
-                            <div class="metric-item">
-                                <div class="metric-label">5yr</div>
-                                <div class="metric-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                            <div>
+                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">5yr</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
                             </div>
-                        </div>
-                        
-                        <div class="allocation-info">
-                            <span><strong>Growth AA:</strong> ${match.growthAA.toFixed(1)}%</span>
-                            <span><strong>Def AA:</strong> ${match.defAA.toFixed(1)}%</span>
+                            <div>
+                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">Growth AA</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.growthAA.toFixed(1)}%</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">Def AA</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.defAA.toFixed(1)}%</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1655,10 +1658,9 @@
             
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
-            const higherGrowthPercentage = Math.max(manual.growthAA, recommended.growthAA);
             
             analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${higherGrowthPercentage.toFixed(1)}%. The difference in growth allocation between the two investments is ${growthDiff.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
