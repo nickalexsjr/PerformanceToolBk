@@ -1715,7 +1715,6 @@ function deleteData() {
             const growthDiff = Math.abs(manual.growthAA - similiar.growthAA);
             const higherGrowthInvestment = manual.growthAA > similiar.growthAA ? manualName : similiarName;
             
-            analysis += `PORTFOLIO COMPARISON:\n`;
             analysis += `When comparing the ${manualName} and ${similiarName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
