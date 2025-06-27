@@ -1042,9 +1042,23 @@
                         document.querySelector(`.mode-btn[onclick="setMode('${data.mode}')"]`).classList.add('active');
                     }
                     
+                    // Restore form data if there's a manual investment
+                    const manualInvestment = investments.find(inv => inv.type === 'Manual Entry');
+                    if (manualInvestment) {
+                        document.getElementById('investmentName').value = manualInvestment.name;
+                        document.getElementById('dateReturns').value = manualInvestment.date.toISOString().split('T')[0];
+                        document.getElementById('investmentValue').value = manualInvestment.value ? manualInvestment.value.toLocaleString() : '';
+                        document.getElementById('oneYear').value = manualInvestment.oneYear || '';
+                        document.getElementById('threeYears').value = manualInvestment.threeYears || '';
+                        document.getElementById('fiveYears').value = manualInvestment.fiveYears || '';
+                        document.getElementById('growthAA').value = manualInvestment.growthAA;
+                        document.getElementById('defAA').value = manualInvestment.defAA;
+                    }
+                    
                     // Update UI
                     updateComparison();
                     updateAnalysisButton();
+                    updateFormButton();
                     
                     showToast('Data loaded successfully for ' + clientName);
                 } else {
@@ -1235,7 +1249,7 @@
             addManualInvestment();
         });
         
-        // Add manual investment
+        // Add or update manual investment
         function addManualInvestment() {
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
@@ -1287,15 +1301,32 @@
                 id: Date.now()
             };
             
+            // Enforce single manual investment - remove any existing manual investments
+            investments = investments.filter(inv => inv.type !== 'Manual Entry');
+            
+            // Add the new manual investment
             investments.push(investment);
-            console.log('Added manual investment:', investment);
+            console.log('Added/Updated manual investment:', investment);
+            showToast('Investment updated successfully!');
             
             updateComparison();
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
-            showToast('Investment added successfully!');
+            updateFormButton();
             
             // Keep form data persistent - don't reset
+        }
+        
+        // Update the form button text based on whether we have a manual investment
+        function updateFormButton() {
+            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
+            const hasManualInvestment = investments.some(inv => inv.type === 'Manual Entry');
+            
+            if (hasManualInvestment) {
+                submitBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Update Investment & Find Matches';
+            } else {
+                submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
+            }
         }
         
         // Update analysis button state
@@ -1448,7 +1479,7 @@
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         };
         
-        // Display matches with new card design
+        // Display matches with table-like layout matching the image
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1484,9 +1515,6 @@
             
             let html = '';
             displayMatches.forEach((match, index) => {
-                const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
-                const daysDiff = Math.round(dateDiff / (1000 * 60 * 60 * 24));
-                
                 // Check if already added
                 const alreadyAdded = investments.some(inv => 
                     inv.name === match.name && 
@@ -1499,38 +1527,21 @@
                 
                 html += `
                     <div class="match-card">
-                        <div class="match-header">
-                            <h5 class="match-title">${displayName}</h5>
-                        </div>
-                        
-                        <div class="match-metrics">
-                            <div class="metric-item">
-                                <div class="metric-label">1 Year</div>
-                                <div class="metric-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-row">
+                            <div class="match-name">${displayName}</div>
+                            <div class="match-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                            <div class="match-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                            <div class="match-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                            <div class="match-value">${match.growthAA.toFixed(1)}%</div>
+                            <div class="match-value">${match.defAA.toFixed(1)}%</div>
+                            <div class="match-actions">
+                                <button 
+                                    class="btn ${alreadyAdded ? 'btn-secondary' : 'btn-success'} btn-sm" 
+                                    onclick="addCSVMatch(${index})"
+                                    ${alreadyAdded ? 'disabled' : ''}>
+                                    ${alreadyAdded ? 'Added' : 'Add'}
+                                </button>
                             </div>
-                            <div class="metric-item">
-                                <div class="metric-label">3 Years</div>
-                                <div class="metric-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">5 Years</div>
-                                <div class="metric-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="allocation-info">
-                            <span><strong>Growth:</strong> ${match.growthAA.toFixed(1)}%</span>
-                            <span><strong>Defensive:</strong> ${match.defAA.toFixed(1)}%</span>
-                            <span><strong>Date:</strong> ${match.date.toLocaleDateString('en-AU')} (${daysDiff} days difference)</span>
-                        </div>
-                        
-                        <div class="match-actions">
-                            <button 
-                                class="btn ${alreadyAdded ? 'btn-secondary' : 'btn-success'} btn-sm" 
-                                onclick="addCSVMatch(${index})"
-                                ${alreadyAdded ? 'disabled' : ''}>
-                                <i class="bi bi-${alreadyAdded ? 'check' : 'plus'}-circle"></i> ${alreadyAdded ? 'Added' : 'Add'}
-                            </button>
                         </div>
                     </div>
                 `;
@@ -1557,9 +1568,18 @@
         // Remove investment from portfolio
         function removeInvestment(index) {
             if (confirm('Are you sure you want to remove this investment from the comparison?')) {
+                const removedInvestment = investments[index];
                 investments.splice(index, 1);
+                
+                // If we removed the manual investment, clear the form
+                if (removedInvestment.type === 'Manual Entry') {
+                    document.getElementById('investmentForm').reset();
+                    document.getElementById('dateReturns').valueAsDate = new Date();
+                }
+                
                 updateComparison();
                 updateAnalysisButton();
+                updateFormButton();
                 
                 // Re-display matches if there are still manual investments
                 if (investments.filter(inv => inv.type === 'Manual Entry').length > 0) {
@@ -1576,6 +1596,21 @@
             document.getElementById('dateReturns').valueAsDate = new Date();
             document.getElementById('growthAA').style.borderColor = '#e1e8ed';
             document.getElementById('defAA').style.borderColor = '#e1e8ed';
+            
+            // Remove any manual investments
+            investments = investments.filter(inv => inv.type !== 'Manual Entry');
+            
+            // Update everything
+            updateComparison();
+            updateAnalysisButton();
+            updateFormButton();
+            
+            // Hide matches section if no manual investments
+            if (investments.filter(inv => inv.type === 'Manual Entry').length === 0) {
+                document.getElementById('matchesSection').style.display = 'none';
+            }
+            
+            showToast('Form reset - manual investment removed');
         }
         
         // Update comparison table and chart
