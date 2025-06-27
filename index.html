@@ -141,12 +141,12 @@
         }
 
         .btn-export {
-            background: #6f42c1;
+            background: #dc3545;
             color: white;
         }
 
         .btn-export:hover {
-            background: #5a2d91;
+            background: #c82333;
         }
 
         .glass-card {
@@ -574,7 +574,7 @@
                     <button class="btn-load" onclick="toggleLoadSection()">
                         <i class="bi bi-folder-open"></i> Load
                     </button>
-                    <button class="btn-delete" onclick="deleteSavedData()" style="display: none;">
+                    <button class="btn-delete" id="deleteBtn" onclick="deleteSavedData()" style="display: none;">
                         <i class="bi bi-trash"></i> Delete
                     </button>
                     <button class="btn-export" onclick="exportToPDF()">
@@ -666,7 +666,7 @@
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
-                <h4 class="mb-0"><i class="bi bi-search"></i> Matches from Database</h4>
+                <h4 class="mb-0"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
                 <button class="toggle-btn" onclick="toggleMatches()">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
@@ -716,7 +716,7 @@
                 </button>
             </div>
             <div id="findexAnalysisContent">
-                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 match) to enable analysis</p>
+                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>
             </div>
         </div>
 
@@ -853,7 +853,7 @@
         function toggleLoadSection() {
             const select = document.getElementById('savedClients');
             const input = document.getElementById('clientName');
-            const deleteBtn = document.getElementById('savedClients').nextElementSibling.nextElementSibling.nextElementSibling;
+            const deleteBtn = document.getElementById('deleteBtn');
             
             if (select.style.display === 'none') {
                 loadSavedClientsList();
@@ -881,7 +881,7 @@
             const selectedClient = select.value;
             
             if (!selectedClient) {
-                showToast('Please select a client to delete');
+                showToast('Please select a client to delete', 'error');
                 return;
             }
             
@@ -892,7 +892,7 @@
                     loadSavedClientsList();
                     select.value = '';
                 } catch (e) {
-                    showToast('Error deleting data');
+                    showToast('Error deleting data', 'error');
                 }
             }
         }
@@ -1348,7 +1348,7 @@
                 analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
             } else {
                 analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 match) to enable analysis</p>';
+                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>';
             }
         }
         
@@ -1744,20 +1744,20 @@
         
         function generateFindexAnalysis() {
             const manual = investments.find(inv => inv.type === 'Manual Entry');
-            const match = investments.find(inv => inv.type === 'CSV Database');
+            const recommended = investments.find(inv => inv.type === 'CSV Database');
             
-            if (!manual || !match) {
-                showToast('Analysis requires exactly 1 manual entry and 1 match investment');
+            if (!manual || !recommended) {
+                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
                 return;
             }
             
-            const analysisText = generateAnalysisText(manual, match);
+            const analysisText = generateAnalysisText(manual, recommended);
             
             const analysisHTML = `
                 <div class="findex-analysis">
                     <div class="analysis-header">
                         <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and match option</small>
+                        <small>Comparative analysis between your current investment and recommended option</small>
                     </div>
                     
                     <div class="analysis-section">
@@ -1774,18 +1774,18 @@
             document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
         }
         
-        function generateAnalysisText(manual, match) {
+        function generateAnalysisText(manual, recommended) {
             const investmentValue = manual.value || 100000;
             
             const manualName = formatInvestmentName(manual.name);
-            const matchName = formatInvestmentName(match.name);
+            const recommendedName = formatInvestmentName(recommended.name);
             
             let analysis = '';
             
-            if (manual.oneYear !== null && match.oneYear !== null) {
-                const diff1Y = match.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? matchName : manualName;
-                const lowerPerformer = diff1Y > 0 ? manualName : matchName;
+            if (manual.oneYear !== null && recommended.oneYear !== null) {
+                const diff1Y = recommended.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
                 const absDiff1Y = Math.abs(diff1Y);
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
@@ -1793,10 +1793,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
-            if (manual.threeYears !== null && match.threeYears !== null) {
-                const diff3Y = match.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? matchName : manualName;
-                const lowerPerformer = diff3Y > 0 ? manualName : matchName;
+            if (manual.threeYears !== null && recommended.threeYears !== null) {
+                const diff3Y = recommended.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
                 const absDiff3Y = Math.abs(diff3Y);
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
@@ -1805,10 +1805,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-            if (manual.fiveYears !== null && match.fiveYears !== null) {
-                const diff5Y = match.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? matchName : manualName;
-                const lowerPerformer = diff5Y > 0 ? manualName : matchName;
+            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
+                const diff5Y = recommended.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
                 const absDiff5Y = Math.abs(diff5Y);
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
@@ -1817,10 +1817,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            const growthDiff = Math.abs(manual.growthAA - match.growthAA);
-            const higherGrowthInvestment = manual.growthAA > match.growthAA ? manualName : matchName;
+            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
+            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
             
-            analysis += `When comparing the ${manualName} and ${matchName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
