@@ -15,7 +15,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -81,9 +81,9 @@
         }
 
         .mode-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             color: white;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
 
         .save-section {
@@ -159,20 +159,21 @@
         .form-control {
             border: 2px solid #e1e8ed;
             border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 16px;
+            padding: 12px 18px;
+            font-size: 14px;
             font-weight: 500;
             transition: all 0.3s ease;
             background: white;
             color: #212529;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            height: 42px;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #dc3545;
             background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15), 0 2px 4px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.15), 0 2px 4px rgba(0, 0, 0, 0.04);
             transform: translateY(-1px);
         }
 
@@ -182,23 +183,23 @@
         }
 
         .form-control:hover {
-            border-color: #764ba2;
+            border-color: #dc3545;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 10px 25px;
             border-radius: 50px;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
         }
 
         .btn-success {
@@ -216,9 +217,9 @@
 
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-top: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
         .input-group {
@@ -228,30 +229,63 @@
         .input-group label {
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: block;
-            font-size: 15px;
+            font-size: 14px;
             letter-spacing: 0.3px;
         }
 
         .input-group .form-control {
             width: 100%;
-            height: 48px;
         }
 
         .input-group small {
             display: block;
             margin-top: 5px;
             color: #6c757d;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .form-label {
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 15px;
+            margin-bottom: 8px;
+            font-size: 14px;
             letter-spacing: 0.3px;
+        }
+
+        .input-with-symbol {
+            position: relative;
+        }
+
+        .input-symbol {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .input-with-symbol .form-control {
+            padding-left: 28px;
+        }
+
+        .input-symbol-right {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-weight: 600;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .input-with-symbol-right .form-control {
+            padding-right: 28px;
         }
 
         .comparison-table {
@@ -267,7 +301,7 @@
         }
 
         .table thead th {
-            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             color: white;
             border: none;
             padding: 15px 12px;
@@ -280,7 +314,7 @@
             border-bottom: 1px solid #f0f0f0;
             text-align: center;
             vertical-align: middle;
-            background: white; /* Default white background */
+            background: white;
         }
 
         .table tbody tr:hover {
@@ -288,7 +322,7 @@
         }
 
         .table tbody tr:hover td {
-            background: #f8f9fa; /* Maintain hover effect */
+            background: #f8f9fa;
         }
 
         .performance-high {
@@ -308,6 +342,75 @@
         }
 
         .csv-entry {
+        }
+
+        .match-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .match-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .match-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .allocation-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .match-actions {
+            display: flex;
+            justify-content: flex-end;
         }
 
         .dropdown-item {
@@ -342,12 +445,12 @@
         }
 
         .findex-analysis {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             color: white;
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
         }
 
         .analysis-header {
@@ -396,12 +499,12 @@
 
         .findex-highlight {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
-            color: #1e3c72;
+            color: #dc3545;
             padding: 15px;
             border-radius: 10px;
             margin: 15px 0;
             font-weight: 600;
-            border-left: 5px solid #1e3c72;
+            border-left: 5px solid #dc3545;
         }
 
         .disclaimer h5 {
@@ -459,10 +562,108 @@
             transform: translateX(0);
         }
 
+        .matches-toggle {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .matches-content.minimized {
+            max-height: 300px;
+            overflow: hidden;
+        }
+
+        .matches-content.expanded {
+            max-height: none;
+        }
+
+        .edit-investment {
+            background: #ffc107;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .edit-investment:hover {
+            background: #e0a800;
+        }
+
+        .save-edit {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .cancel-edit {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .glass-card, .comparison-table, .chart-container, .findex-analysis {
+                background: white !important;
+                color: black !important;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+            
+            #matchesSection {
+                display: none !important;
+            }
+            
+            .header-controls {
+                display: none !important;
+            }
+            
+            .disclaimer {
+                page-break-before: always;
+            }
+        }
+
         @media (max-width: 768px) {
             .input-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 15px;
             }
             
             h1 {
@@ -504,6 +705,11 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .match-metrics {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -543,7 +749,7 @@
         <div class="glass-card">
             <h4 class="mb-4"><i class="bi bi-plus-circle"></i> Add Investment Analysis</h4>
             <form id="investmentForm">
-                <div class="row mb-4">
+                <div class="row mb-3">
                     <div class="col-md-6 mb-3 mb-md-0">
                         <label for="investmentName" class="form-label">Investment Name *</label>
                         <input type="text" class="form-control" id="investmentName" required>
@@ -558,33 +764,51 @@
                 
                 <div class="input-grid">
                     <div class="input-group">
-                        <label for="investmentValue">Investment Value ($) *</label>
-                        <input type="number" class="form-control" id="investmentValue" step="0.01" min="0" placeholder="0.00" required>
+                        <label for="investmentValue">Investment Value *</label>
+                        <div class="input-with-symbol">
+                            <span class="input-symbol">$</span>
+                            <input type="text" class="form-control" id="investmentValue" placeholder="100,000" required>
+                        </div>
                         <small>Current investment value in dollars</small>
                     </div>
                     <div class="input-group">
-                        <label for="oneYear">1 Year Return (%)</label>
-                        <input type="number" class="form-control" id="oneYear" step="0.01" placeholder="0.00">
+                        <label for="oneYear">1 Year Return</label>
+                        <div class="input-with-symbol-right">
+                            <input type="text" class="form-control" id="oneYear" placeholder="7.50">
+                            <span class="input-symbol-right">%</span>
+                        </div>
                         <small>Annual return percentage</small>
                     </div>
                     <div class="input-group">
-                        <label for="threeYears">3 Year Return (%)</label>
-                        <input type="number" class="form-control" id="threeYears" step="0.01" placeholder="0.00">
+                        <label for="threeYears">3 Year Return</label>
+                        <div class="input-with-symbol-right">
+                            <input type="text" class="form-control" id="threeYears" placeholder="6.25">
+                            <span class="input-symbol-right">%</span>
+                        </div>
                         <small>3-year annualized return</small>
                     </div>
                     <div class="input-group">
-                        <label for="fiveYears">5 Year Return (%)</label>
-                        <input type="number" class="form-control" id="fiveYears" step="0.01" placeholder="0.00">
+                        <label for="fiveYears">5 Year Return</label>
+                        <div class="input-with-symbol-right">
+                            <input type="text" class="form-control" id="fiveYears" placeholder="8.15">
+                            <span class="input-symbol-right">%</span>
+                        </div>
                         <small>5-year annualized return</small>
                     </div>
                     <div class="input-group">
-                        <label for="growthAA">Growth Allocation (%)*</label>
-                        <input type="number" class="form-control" id="growthAA" step="0.01" min="0" max="100" placeholder="0.00" required>
+                        <label for="growthAA">Growth Allocation *</label>
+                        <div class="input-with-symbol-right">
+                            <input type="text" class="form-control" id="growthAA" placeholder="67" required>
+                            <span class="input-symbol-right">%</span>
+                        </div>
                         <small>Must total 100% with Defensive</small>
                     </div>
                     <div class="input-group">
-                        <label for="defAA">Defensive Allocation (%)*</label>
-                        <input type="number" class="form-control" id="defAA" step="0.01" min="0" max="100" placeholder="0.00" required>
+                        <label for="defAA">Defensive Allocation *</label>
+                        <div class="input-with-symbol-right">
+                            <input type="text" class="form-control" id="defAA" placeholder="33" required>
+                            <span class="input-symbol-right">%</span>
+                        </div>
                         <small>Must total 100% with Growth</small>
                     </div>
                 </div>
@@ -602,8 +826,15 @@
 
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
-            <h4 class="mb-4"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
-            <div id="matchesList"></div>
+            <div class="matches-toggle">
+                <h4 class="mb-0"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
+                <button class="toggle-btn" onclick="toggleMatches()">
+                    <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
+                </button>
+            </div>
+            <div id="matchesContent" class="matches-content expanded">
+                <div id="matchesList"></div>
+            </div>
         </div>
 
         <!-- Comparison Table -->
@@ -687,7 +918,27 @@
         let investments = [];
         let performanceChart = null;
         let currentMatches = [];
-        let currentMode = 'client'; // client or adviser
+        let currentMode = 'client';
+        let editingInvestment = null;
+        let matchesMinimized = false;
+        
+        // Client mode name mapping
+        const clientModeNames = {
+            'MDA Active Growth - Unlisted (No TDs)': 'Findex Growth Portfolio 1',
+            'MDA Active Growth Plus - Unlisted (No TDs)': 'Findex Growth Plus Portfolio 1',
+            'MDA Active High Growth - Unlisted (No TDs)': 'Findex High Growth Portfolio 1',
+            'MDA Active Balanced - Unlisted (No TDs)': 'Findex Balanced Portfolio 1',
+            'MDA Active Moderate - Unlisted (No TDs)': 'Findex Moderate Portfolio 1',
+            'MDA Active Conservative - Unlisted (No TDs)': 'Findex Conservative Portfolio 1',
+            'MDA Active Defensive - Unlisted (No TDs)': 'Findex Defensive Portfolio 1',
+            'Passive MDA Growth': 'Findex Growth Portfolio 2',
+            'Passive MDA Growth Plus': 'Findex Growth Plus Portfolio 2',
+            'Passive MDA High Growth': 'Findex High Growth Portfolio 2',
+            'Passive MDA Balanced': 'Findex Balanced Portfolio 2',
+            'Passive MDA Moderate': 'Findex Moderate Portfolio 2',
+            'Passive MDA Conservative': 'Findex Conservative Portfolio 2',
+            'Passive MDA Defensive': 'Findex Defensive Portfolio 2'
+        };
         
         // Load CSV data automatically when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -700,9 +951,50 @@
             document.getElementById('growthAA').addEventListener('input', validateAllocations);
             document.getElementById('defAA').addEventListener('input', validateAllocations);
             
+            // Add input formatting
+            setupInputFormatting();
+            
             // Load saved clients list
             loadSavedClientsList();
         });
+        
+        // Setup input formatting
+        function setupInputFormatting() {
+            // Format investment value with commas
+            const investmentValue = document.getElementById('investmentValue');
+            investmentValue.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/[^\d.]/g, '');
+                if (value) {
+                    const parts = value.split('.');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    if (parts.length > 1) {
+                        value = parts[0] + '.' + parts[1].slice(0, 2);
+                    } else {
+                        value = parts[0];
+                    }
+                }
+                e.target.value = value;
+            });
+        }
+        
+        // Toggle matches section
+        function toggleMatches() {
+            const content = document.getElementById('matchesContent');
+            const icon = document.getElementById('toggleIcon');
+            const text = document.getElementById('toggleText');
+            
+            if (matchesMinimized) {
+                content.className = 'matches-content expanded';
+                icon.className = 'bi bi-arrows-collapse';
+                text.textContent = 'Minimize';
+                matchesMinimized = false;
+            } else {
+                content.className = 'matches-content minimized';
+                icon.className = 'bi bi-arrows-expand';
+                text.textContent = 'Expand';
+                matchesMinimized = true;
+            }
+        }
         
         // Mode management
         function setMode(mode) {
@@ -837,89 +1129,22 @@
         
         // PDF Export functionality
         function exportToPDF() {
-            if (investments.length === 0) {
-                showToast('No data to export. Please add investments first.');
-                return;
+            // Minimize matches section before export
+            if (!matchesMinimized) {
+                toggleMatches();
             }
             
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Header
-            doc.setFontSize(20);
-            doc.text('Findex Investment Performance Tool', 20, 30);
-            
-            const clientName = document.getElementById('clientName').value.trim();
-            if (clientName) {
-                doc.setFontSize(14);
-                doc.text('Client: ' + clientName, 20, 45);
-            }
-            
-            doc.setFontSize(12);
-            doc.text('Report Date: ' + new Date().toLocaleDateString(), 20, clientName ? 55 : 45);
-            
-            let yPosition = clientName ? 75 : 65;
-            
-            // Performance Summary
-            doc.setFontSize(16);
-            doc.text('Performance Summary', 20, yPosition);
-            yPosition += 20;
-            
-            investments.forEach((inv, index) => {
-                const displayName = formatInvestmentName(inv.name);
-                
-                doc.setFontSize(12);
-                doc.text(`${index + 1}. ${displayName}`, 20, yPosition);
-                yPosition += 10;
-                doc.text(`   Date: ${inv.date.toLocaleDateString()}`, 25, yPosition);
-                yPosition += 8;
-                if (inv.value) {
-                    doc.text(`   Value: $${inv.value.toLocaleString()}`, 25, yPosition);
-                    yPosition += 8;
-                }
-                doc.text(`   1Y: ${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'} | 3Y: ${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'} | 5Y: ${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}`, 25, yPosition);
-                yPosition += 8;
-                doc.text(`   Allocation: ${inv.growthAA.toFixed(1)}% Growth, ${inv.defAA.toFixed(1)}% Defensive`, 25, yPosition);
-                yPosition += 15;
-                
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            });
-            
-            // Analysis if available
-            if (investments.length === 2) {
-                if (yPosition > 200) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-                
-                doc.setFontSize(16);
-                doc.text('Performance Analysis', 20, yPosition);
-                yPosition += 20;
-                
-                const manual = investments.find(inv => inv.type === 'Manual Entry');
-                const recommended = investments.find(inv => inv.type === 'CSV Database');
-                
-                if (manual && recommended) {
-                    const analysis = generateAnalysisText(manual, recommended);
-                    doc.setFontSize(10);
-                    const lines = doc.splitTextToSize(analysis, 170);
-                    doc.text(lines, 20, yPosition);
-                }
-            }
-            
-            // Save the PDF
-            const filename = clientName ? `${clientName}_Investment_Report.pdf` : 'Investment_Report.pdf';
-            doc.save(filename);
-            showToast('PDF exported successfully');
+            // Use the browser's print functionality
+            window.print();
         }
         
         // Validate that allocations total 100%
         function validateAllocations() {
-            const growth = parseFloat(document.getElementById('growthAA').value) || 0;
-            const defensive = parseFloat(document.getElementById('defAA').value) || 0;
+            const growthText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
+            const defensiveText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
+            
+            const growth = parseFloat(growthText) || 0;
+            const defensive = parseFloat(defensiveText) || 0;
             const total = growth + defensive;
             
             if (total !== 100 && growth > 0 && defensive > 0) {
@@ -1074,12 +1299,23 @@
         function addManualInvestment() {
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
-            const value = parseFloat(document.getElementById('investmentValue').value);
-            const oneYear = document.getElementById('oneYear').value ? parseFloat(document.getElementById('oneYear').value) : null;
-            const threeYears = document.getElementById('threeYears').value ? parseFloat(document.getElementById('threeYears').value) : null;
-            const fiveYears = document.getElementById('fiveYears').value ? parseFloat(document.getElementById('fiveYears').value) : null;
-            const growthAA = parseFloat(document.getElementById('growthAA').value);
-            const defAA = parseFloat(document.getElementById('defAA').value);
+            
+            // Parse investment value (remove commas and dollar signs)
+            const valueText = document.getElementById('investmentValue').value.replace(/[^\d.]/g, '');
+            const value = parseFloat(valueText);
+            
+            // Parse percentage values (remove % signs)
+            const oneYearText = document.getElementById('oneYear').value.replace(/[^\d.-]/g, '');
+            const threeYearsText = document.getElementById('threeYears').value.replace(/[^\d.-]/g, '');
+            const fiveYearsText = document.getElementById('fiveYears').value.replace(/[^\d.-]/g, '');
+            const growthAAText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
+            const defAAText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
+            
+            const oneYear = oneYearText ? parseFloat(oneYearText) : null;
+            const threeYears = threeYearsText ? parseFloat(threeYearsText) : null;
+            const fiveYears = fiveYearsText ? parseFloat(fiveYearsText) : null;
+            const growthAA = parseFloat(growthAAText);
+            const defAA = parseFloat(defAAText);
             
             // Validation - require name, date, value, and allocations
             if (!name || !dateStr || isNaN(value) || isNaN(growthAA) || isNaN(defAA)) {
@@ -1117,8 +1353,87 @@
             updateComparison();
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
-            resetForm();
             showToast('Investment added successfully!');
+        }
+        
+        // Edit investment functionality
+        function editInvestment(index) {
+            const investment = investments[index];
+            editingInvestment = index;
+            
+            // Show edit inputs in the table row
+            const row = document.querySelector(`#comparisonTableBody tr:nth-child(${index + 1})`);
+            if (!row) return;
+            
+            row.innerHTML = `
+                <td><input type="text" class="form-control" value="${investment.name}" id="editName"></td>
+                <td><input type="date" class="form-control" value="${investment.date.toISOString().split('T')[0]}" id="editDate"></td>
+                <td><input type="text" class="form-control" value="${investment.value || ''}" id="editValue" placeholder="100,000"></td>
+                <td><input type="text" class="form-control" value="${investment.oneYear || ''}" id="editOneYear"></td>
+                <td><input type="text" class="form-control" value="${investment.threeYears || ''}" id="editThreeYears"></td>
+                <td><input type="text" class="form-control" value="${investment.fiveYears || ''}" id="editFiveYears"></td>
+                <td><input type="text" class="form-control" value="${investment.growthAA}" id="editGrowthAA"></td>
+                <td><input type="text" class="form-control" value="${investment.defAA}" id="editDefAA"></td>
+                <td>
+                    <button class="save-edit" onclick="saveEdit(${index})">
+                        <i class="bi bi-check"></i>
+                    </button>
+                    <button class="cancel-edit" onclick="cancelEdit()">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </td>
+            `;
+        }
+        
+        function saveEdit(index) {
+            const name = document.getElementById('editName').value.trim();
+            const dateStr = document.getElementById('editDate').value;
+            const valueText = document.getElementById('editValue').value.replace(/[^\d.]/g, '');
+            const value = valueText ? parseFloat(valueText) : null;
+            
+            const oneYearText = document.getElementById('editOneYear').value.replace(/[^\d.-]/g, '');
+            const threeYearsText = document.getElementById('editThreeYears').value.replace(/[^\d.-]/g, '');
+            const fiveYearsText = document.getElementById('editFiveYears').value.replace(/[^\d.-]/g, '');
+            
+            const oneYear = oneYearText ? parseFloat(oneYearText) : null;
+            const threeYears = threeYearsText ? parseFloat(threeYearsText) : null;
+            const fiveYears = fiveYearsText ? parseFloat(fiveYearsText) : null;
+            const growthAA = parseFloat(document.getElementById('editGrowthAA').value);
+            const defAA = parseFloat(document.getElementById('editDefAA').value);
+            
+            // Validation
+            if (!name || !dateStr || isNaN(growthAA) || isNaN(defAA)) {
+                showToast('Please fill in required fields');
+                return;
+            }
+            
+            if (Math.abs((growthAA + defAA) - 100) > 0.01) {
+                showToast('Growth and Defensive allocations must total 100%');
+                return;
+            }
+            
+            // Update the investment
+            investments[index] = {
+                ...investments[index],
+                name: name,
+                date: new Date(dateStr),
+                value: value,
+                oneYear: oneYear,
+                threeYears: threeYears,
+                fiveYears: fiveYears,
+                growthAA: growthAA,
+                defAA: defAA
+            };
+            
+            editingInvestment = null;
+            updateComparison();
+            updateAnalysisButton();
+            showToast('Investment updated successfully!');
+        }
+        
+        function cancelEdit() {
+            editingInvestment = null;
+            updateComparison();
         }
         
         // Update analysis button state
@@ -1271,7 +1586,7 @@
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         };
         
-        // Display matches with working add buttons
+        // Display matches with new UI design
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1307,8 +1622,6 @@
             
             let html = '';
             displayMatches.forEach((match, index) => {
-                const growthDiff = Math.abs(match.growthAA - investment.growthAA);
-                const defDiff = Math.abs(match.defAA - investment.defAA);
                 const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
                 const daysDiff = Math.round(dateDiff / (1000 * 60 * 60 * 24));
                 
@@ -1323,23 +1636,33 @@
                 const displayName = formatInvestmentName(match.name);
                 
                 html += `
-                    <div class="dropdown-item" style="border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 10px;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">${displayName}</h6>
-                                <div class="match-info">
-                                    Growth: ${match.growthAA.toFixed(1)}% (±${growthDiff.toFixed(1)}%) | 
-                                    Defensive: ${match.defAA.toFixed(1)}% (±${defDiff.toFixed(1)}%) | 
-                                    Date: ${match.date.toLocaleDateString('en-AU')} (${daysDiff} days difference)
-                                </div>
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        1Y: ${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'} | 
-                                        3Y: ${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'} | 
-                                        5Y: ${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}
-                                    </small>
-                                </div>
+                    <div class="match-card">
+                        <div class="match-header">
+                            <h5 class="match-title">${displayName}</h5>
+                        </div>
+                        
+                        <div class="match-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">1 Year</div>
+                                <div class="metric-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
                             </div>
+                            <div class="metric-item">
+                                <div class="metric-label">3 Years</div>
+                                <div class="metric-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">5 Years</div>
+                                <div class="metric-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="allocation-info">
+                            <span><strong>Growth:</strong> ${match.growthAA.toFixed(1)}%</span>
+                            <span><strong>Defensive:</strong> ${match.defAA.toFixed(1)}%</span>
+                            <span><strong>Date:</strong> ${match.date.toLocaleDateString('en-AU')} (${daysDiff} days difference)</span>
+                        </div>
+                        
+                        <div class="match-actions">
                             <button 
                                 class="btn ${alreadyAdded ? 'btn-secondary' : 'btn-success'} btn-sm" 
                                 onclick="addCSVMatch(${index})"
@@ -1358,8 +1681,8 @@
         // Format investment name based on current mode
         function formatInvestmentName(name) {
             if (currentMode === 'client') {
-                // Remove MDA from the name
-                return name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
+                // Use the client mode mapping
+                return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
             } else {
                 // Adviser mode - add Findex before MDA if not already there
                 if (name.toLowerCase().includes('mda') && !name.toLowerCase().includes('findex')) {
@@ -1433,13 +1756,18 @@
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td>${inv.growthAA.toFixed(1)}%</td>
                         <td>${inv.defAA.toFixed(1)}%</td>
                         <td>
+                            ${inv.type === 'Manual Entry' ? `
+                                <button class="edit-investment" onclick="editInvestment(${index})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            ` : ''}
                             <button class="btn btn-danger btn-sm" onclick="removeInvestment(${index})">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -1470,12 +1798,12 @@
                 const displayName = formatInvestmentName(inv.name);
                 const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
                 
-                // Use different colors for each investment
+                // Use Findex theme colors
                 const colors = [
-                    { bg: 'rgba(54, 162, 235, 0.7)', border: 'rgba(54, 162, 235, 1)' },
-                    { bg: 'rgba(255, 99, 132, 0.7)', border: 'rgba(255, 99, 132, 1)' },
-                    { bg: 'rgba(75, 192, 192, 0.7)', border: 'rgba(75, 192, 192, 1)' },
-                    { bg: 'rgba(153, 102, 255, 0.7)', border: 'rgba(153, 102, 255, 1)' }
+                    { bg: 'rgba(220, 53, 69, 0.7)', border: 'rgba(220, 53, 69, 1)' },
+                    { bg: 'rgba(0, 0, 0, 0.7)', border: 'rgba(0, 0, 0, 1)' },
+                    { bg: 'rgba(128, 128, 128, 0.7)', border: 'rgba(128, 128, 128, 1)' },
+                    { bg: 'rgba(169, 169, 169, 0.7)', border: 'rgba(169, 169, 169, 1)' }
                 ];
                 
                 const color = colors[index % colors.length];
@@ -1560,7 +1888,7 @@
                         <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
                         
                         <div class="findex-highlight">
-                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided ($${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
                         </div>
                     </div>
                 </div>
@@ -1588,7 +1916,7 @@
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             // 3 Year Analysis
@@ -1602,7 +1930,7 @@
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
             // 5 Year Analysis
@@ -1616,22 +1944,16 @@
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher yield of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            // Risk Profile Comparison
+            // Risk Profile Comparison - Updated format
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
-            analysis += `RISK PROFILE COMPARISON:\n`;
-            analysis += `${manualName}: ${manual.growthAA.toFixed(2)}% Growth, ${manual.defAA.toFixed(2)}% Defensive\n`;
-            analysis += `${recommendedName}: ${recommended.growthAA.toFixed(2)}% Growth, ${recommended.defAA.toFixed(2)}% Defensive\n`;
+            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
+            const higherGrowthPercentage = Math.max(manual.growthAA, recommended.growthAA);
             
-            if (growthDiff < 5) {
-                analysis += `Both investments maintain similar risk profiles with comparable asset allocation.`;
-            } else if (manual.growthAA > recommended.growthAA) {
-                analysis += `${manualName} has a more growth-oriented allocation (+${growthDiff.toFixed(2)}% growth exposure).`;
-            } else {
-                analysis += `${recommendedName} has a more growth-oriented allocation (+${growthDiff.toFixed(2)}% growth exposure).`;
-            }
+            analysis += `PORTFOLIO COMPARISON:\n`;
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${higherGrowthPercentage.toFixed(1)}%.`;
             
             return analysis;
         }
