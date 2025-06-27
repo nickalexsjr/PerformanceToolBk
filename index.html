@@ -375,44 +375,6 @@
             text-align: left;
         }
 
-        .match-metrics {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .metric-item {
-            text-align: left;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .metric-label {
-            font-size: 12px;
-            color: #6c757d;
-            font-weight: 500;
-            margin-bottom: 3px;
-            text-align: left;
-        }
-
-        .metric-value {
-            font-size: 16px;
-            font-weight: 700;
-            color: #2c3e50;
-            text-align: left;
-        }
-
-        .allocation-info {
-            display: flex;
-            justify-content: flex-start;
-            gap: 30px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #6c757d;
-        }
-
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -550,8 +512,8 @@
             
             <div class="top-controls">
                 <div class="mode-toggle">
-                    <button class="mode-btn active" onclick="setMode('client')">Client Mode</button>
-                    <button class="mode-btn" onclick="setMode('adviser')">Adviser Mode</button>
+                    <button class="mode-btn active" data-mode="client">Client Mode</button>
+                    <button class="mode-btn" data-mode="adviser">Adviser Mode</button>
                 </div>
                 
                 <div class="save-section">
@@ -559,13 +521,13 @@
                     <select id="savedClients" style="display: none;">
                         <option value="">Select saved client</option>
                     </select>
-                    <button class="btn-save" onclick="saveData()">
+                    <button class="btn-save" id="saveBtn">
                         <i class="bi bi-save"></i> Save
                     </button>
-                    <button class="btn-load" onclick="toggleLoadSection()">
+                    <button class="btn-load" id="loadBtn">
                         <i class="bi bi-folder-open"></i> Load
                     </button>
-                    <button class="btn-export" onclick="exportToPDF()">
+                    <button class="btn-export" id="exportBtn">
                         <i class="bi bi-file-pdf"></i> Export PDF
                     </button>
                 </div>
@@ -644,7 +606,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-plus-circle"></i> Add Investment & Find Matches
                     </button>
-                    <button type="button" class="btn btn-secondary ms-2" onclick="resetForm()">
+                    <button type="button" class="btn btn-secondary ms-2" id="resetBtn">
                         <i class="bi bi-arrow-clockwise"></i> Reset
                     </button>
                 </div>
@@ -655,7 +617,7 @@
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
                 <h4 class="mb-0"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
-                <button class="toggle-btn" onclick="toggleMatches()">
+                <button class="toggle-btn" id="toggleMatchesBtn">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
             </div>
@@ -699,7 +661,7 @@
         <div class="glass-card" id="findexAnalysisSection" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4><i class="bi bi-bar-chart-line"></i> Performance Analysis</h4>
-                <button class="btn btn-primary" id="generateAnalysisBtn" onclick="generateFindexAnalysis()" disabled>
+                <button class="btn btn-primary" id="generateAnalysisBtn" disabled>
                     <i class="bi bi-graph-up"></i> Generate Analysis
                 </button>
             </div>
@@ -740,6 +702,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
+        // Global variables
         let csvData = [];
         let investments = [];
         let performanceChart = null;
@@ -763,16 +726,83 @@
             'Passive MDA Conservative': 'Findex Conservative Portfolio 2',
             'Passive MDA Defensive': 'Findex Defensive Portfolio 2'
         };
-        
+
+        // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
-            loadCSVData();
+            console.log('DOM loaded, initializing...');
+            
+            // Set initial date
             document.getElementById('dateReturns').valueAsDate = new Date();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Setup input formatting
+            setupInputFormatting();
+            
+            // Load saved clients
+            loadSavedClientsList();
+            
+            // Load CSV data
+            loadCSVData();
+            
+            console.log('Initialization complete');
+        });
+
+        function setupEventListeners() {
+            console.log('Setting up event listeners...');
+            
+            // Mode toggle buttons
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setMode(this.dataset.mode);
+                });
+            });
+            
+            // Save/Load/Export buttons
+            document.getElementById('saveBtn').addEventListener('click', saveData);
+            document.getElementById('loadBtn').addEventListener('click', toggleLoadSection);
+            document.getElementById('exportBtn').addEventListener('click', exportToPDF);
+            
+            // Form submission
+            document.getElementById('investmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addManualInvestment();
+            });
+            
+            // Reset button
+            document.getElementById('resetBtn').addEventListener('click', resetForm);
+            
+            // Toggle matches button
+            document.getElementById('toggleMatchesBtn').addEventListener('click', toggleMatches);
+            
+            // Generate analysis button
+            document.getElementById('generateAnalysisBtn').addEventListener('click', generateFindexAnalysis);
+            
+            // Allocation validation
             document.getElementById('growthAA').addEventListener('input', validateAllocations);
             document.getElementById('defAA').addEventListener('input', validateAllocations);
-            setupInputFormatting();
-            loadSavedClientsList();
-        });
-        
+            
+            console.log('Event listeners set up');
+        }
+
+        function setMode(mode) {
+            console.log('Setting mode to:', mode);
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            updateComparison();
+            
+            const analysisContent = document.getElementById('findexAnalysisContent');
+            if (analysisContent.innerHTML.includes('Performance Analysis Report')) {
+                generateFindexAnalysis();
+            }
+            
+            if (document.getElementById('matchesSection').style.display !== 'none') {
+                findMatchesForAllManualInvestments();
+            }
+        }
+
         function setupInputFormatting() {
             const investmentValueInput = document.getElementById('investmentValue');
             investmentValueInput.addEventListener('input', function(e) {
@@ -783,7 +813,7 @@
                 }
             });
         }
-        
+
         function toggleMatches() {
             const content = document.getElementById('matchesList');
             const icon = document.getElementById('toggleIcon');
@@ -801,130 +831,7 @@
                 matchesMinimized = true;
             }
         }
-        
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            updateComparison();
-            
-            const analysisContent = document.getElementById('findexAnalysisContent');
-            if (analysisContent.innerHTML.includes('Performance Analysis Report')) {
-                generateFindexAnalysis();
-            }
-            
-            if (document.getElementById('matchesSection').style.display !== 'none') {
-                findMatchesForAllManualInvestments();
-            }
-        }
-        
-        function loadSavedClientsList() {
-            const savedClients = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && key.startsWith('investmentToolData_')) {
-                    const clientName = key.replace('investmentToolData_', '');
-                    savedClients.push(clientName);
-                }
-            }
-            
-            const select = document.getElementById('savedClients');
-            select.innerHTML = '<option value="">Select saved client</option>';
-            savedClients.forEach(client => {
-                const option = document.createElement('option');
-                option.value = client;
-                option.textContent = client;
-                select.appendChild(option);
-            });
-        }
-        
-        function toggleLoadSection() {
-            const select = document.getElementById('savedClients');
-            const input = document.getElementById('clientName');
-            
-            if (select.style.display === 'none') {
-                loadSavedClientsList();
-                select.style.display = 'block';
-                input.style.display = 'none';
-                select.onchange = function() {
-                    if (this.value) {
-                        loadData(this.value);
-                        this.style.display = 'none';
-                        input.style.display = 'block';
-                        input.value = this.value;
-                    }
-                };
-            } else {
-                select.style.display = 'none';
-                input.style.display = 'block';
-            }
-        }
-        
-        function saveData() {
-            const clientName = document.getElementById('clientName').value.trim();
-            if (!clientName) {
-                showToast('Please enter a client name');
-                return;
-            }
-            
-            const dataToSave = {
-                clientName: clientName,
-                investments: investments,
-                mode: currentMode,
-                savedDate: new Date().toISOString()
-            };
-            
-            try {
-                localStorage.setItem('investmentToolData_' + clientName, JSON.stringify(dataToSave));
-                showToast('Data saved successfully for ' + clientName);
-                loadSavedClientsList();
-            } catch (e) {
-                showToast('Error saving data');
-            }
-        }
-        
-        function loadData(clientName) {
-            try {
-                const savedData = localStorage.getItem('investmentToolData_' + clientName);
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    
-                    investments = data.investments.map(inv => ({
-                        ...inv,
-                        date: new Date(inv.date)
-                    }));
-                    
-                    if (data.mode) {
-                        currentMode = data.mode;
-                        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-                        document.querySelector(`.mode-btn[onclick="setMode('${data.mode}')"]`).classList.add('active');
-                    }
-                    
-                    const manualInvestment = investments.find(inv => inv.type === 'Manual Entry');
-                    if (manualInvestment) {
-                        document.getElementById('investmentName').value = manualInvestment.name;
-                        document.getElementById('dateReturns').value = manualInvestment.date.toISOString().split('T')[0];
-                        document.getElementById('investmentValue').value = manualInvestment.value ? manualInvestment.value.toLocaleString() : '';
-                        document.getElementById('oneYear').value = manualInvestment.oneYear || '';
-                        document.getElementById('threeYears').value = manualInvestment.threeYears || '';
-                        document.getElementById('fiveYears').value = manualInvestment.fiveYears || '';
-                        document.getElementById('growthAA').value = manualInvestment.growthAA;
-                        document.getElementById('defAA').value = manualInvestment.defAA;
-                    }
-                    
-                    updateComparison();
-                    updateAnalysisButton();
-                    updateFormButton();
-                    
-                    showToast('Data loaded successfully for ' + clientName);
-                } else {
-                    showToast('No saved data found for ' + clientName);
-                }
-            } catch (e) {
-                showToast('Error loading data');
-            }
-        }
-        
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById('successToast');
             const messageElement = document.getElementById('toastMessage');
@@ -941,14 +848,7 @@
                 toast.classList.remove('show');
             }, 3000);
         }
-        
-        function exportToPDF() {
-            if (!matchesMinimized) {
-                toggleMatches();
-            }
-            window.print();
-        }
-        
+
         function validateAllocations() {
             const growthText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
             const defensiveText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
@@ -962,154 +862,18 @@
             
             if (total !== 100 && growth > 0 && defensive > 0) {
                 growthInput.style.borderColor = '#dc3545';
-                growthInput.style.backgroundColor = '#f8d7da';
-                growthInput.style.color = '#721c24';
                 defensiveInput.style.borderColor = '#dc3545';
-                defensiveInput.style.backgroundColor = '#f8d7da';
-                defensiveInput.style.color = '#721c24';
             } else {
                 growthInput.style.borderColor = '#e1e8ed';
-                growthInput.style.backgroundColor = 'white';
-                growthInput.style.color = '#212529';
                 defensiveInput.style.borderColor = '#e1e8ed';
-                defensiveInput.style.backgroundColor = 'white';
-                defensiveInput.style.color = '#212529';
             }
         }
-        
-        function loadCSVData() {
-            const csvPaths = ['./2025(in).csv', '2025(in).csv', 'PerformanceToolBk/2025(in).csv'];
-            
-            function tryLoadCSV(pathIndex = 0) {
-                if (pathIndex >= csvPaths.length) {
-                    document.getElementById('loadingState').innerHTML = `
-                        <i class="bi bi-exclamation-circle text-danger"></i>
-                        <div class="text-danger">Error loading investment database. Please ensure 2025(in).csv is available.</div>
-                        <div class="text-muted mt-2">Tried paths: ${csvPaths.join(', ')}</div>
-                    `;
-                    return;
-                }
-                
-                fetch(csvPaths[pathIndex])
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Failed to load CSV from ${csvPaths[pathIndex]}`);
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        console.log(`Successfully loaded CSV from: ${csvPaths[pathIndex]}`);
-                        parseCSV(data);
-                        document.getElementById('loadingState').style.display = 'none';
-                    })
-                    .catch(error => {
-                        console.warn(`Failed to load from ${csvPaths[pathIndex]}:`, error);
-                        tryLoadCSV(pathIndex + 1);
-                    });
-            }
-            
-            tryLoadCSV();
-        }
-        
-        function parseCSV(csvText) {
-            Papa.parse(csvText, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    console.log('Papa parse results:', results);
-                    
-                    if (results.data.length === 0) {
-                        console.error('No data found in CSV');
-                        return;
-                    }
-                    
-                    const headers = Object.keys(results.data[0]);
-                    console.log('CSV Headers:', headers);
-                    
-                    csvData = results.data.map((row, index) => {
-                        const parsePerformance = (value) => {
-                            if (!value || value === '' || value === 'N/A') return null;
-                            const parsed = parseFloat(value);
-                            return isNaN(parsed) ? null : parsed;
-                        };
-                        
-                        const parseDate = (dateStr) => {
-                            if (!dateStr) return null;
-                            
-                            console.log('Parsing date string:', dateStr);
-                            
-                            const dateString = dateStr.toString().trim();
-                            const parts = dateString.split('/');
-                            
-                            if (parts.length === 3) {
-                                const day = parseInt(parts[0], 10);
-                                const month = parseInt(parts[1], 10) - 1;
-                                const year = parseInt(parts[2], 10);
-                                
-                                console.log('Date parts:', { day, month: month + 1, year });
-                                
-                                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 2020 && year <= 2030) {
-                                    const parsedDate = new Date(year, month, day);
-                                    console.log('Parsed date:', parsedDate);
-                                    return parsedDate;
-                                }
-                            }
-                            
-                            console.warn('Fallback date parsing for:', dateString);
-                            return new Date(dateString);
-                        };
-                        
-                        const name = row['INVESTMENT NAME'] || row['Investment Name'] || row['Name'] || '';
-                        const oneYear = parsePerformance(row['1 YEAR'] || row['1Y'] || row['1 Year']);
-                        const threeYears = parsePerformance(row['3 YEAR'] || row['3Y'] || row['3 Years']);
-                        const fiveYears = parsePerformance(row['5 YEAR'] || row['5Y'] || row['5 Years']);
-                        const growthAA = parsePerformance(row['GROWTH AA'] || row['Growth AA'] || row['Growth']);
-                        const defAA = parsePerformance(row['DEF AA'] || row['Def AA'] || row['Defensive']);
-                        const date = parseDate(row['DATE'] || row['Date'] || row['date']);
-                        
-                        const investment = {
-                            name: name,
-                            oneYear: oneYear,
-                            threeYears: threeYears,
-                            fiveYears: fiveYears,
-                            growthAA: growthAA,
-                            defAA: defAA,
-                            date: date,
-                            type: 'CSV Database'
-                        };
-                        
-                        if (index < 3) {
-                            console.log(`Investment ${index}:`, investment);
-                        }
-                        
-                        return investment;
-                    }).filter(item => {
-                        const isValid = item.name && item.name.trim() !== '' && 
-                                       item.growthAA !== null && item.defAA !== null && 
-                                       item.date !== null && !isNaN(item.date.getTime());
-                        
-                        if (!isValid && item.name) {
-                            console.warn('Filtered out invalid item:', item);
-                        }
-                        
-                        return isValid;
-                    });
-                    
-                    console.log('Final processed data:', csvData.length, 'valid investments');
-                    console.log('Sample valid investment:', csvData[0]);
-                }
-            });
-        }
-        
-        document.getElementById('investmentForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            addManualInvestment();
-        });
-        
+
         function addManualInvestment() {
+            console.log('Adding manual investment...');
+            
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
-            
             const valueText = document.getElementById('investmentValue').value.replace(/[^\d]/g, '');
             const value = parseFloat(valueText);
             
@@ -1125,13 +889,14 @@
             const growthAA = parseFloat(growthAAText);
             const defAA = parseFloat(defAAText);
             
+            // Validation
             if (!name || !dateStr || isNaN(value) || isNaN(growthAA) || isNaN(defAA)) {
-                showToast('Please fill in investment name, date, value, and allocation percentages');
+                showToast('Please fill in all required fields', 'error');
                 return;
             }
             
             if (oneYear === null && threeYears === null && fiveYears === null) {
-                showToast('Please provide at least one return value (1, 3, or 5 year)');
+                showToast('Please provide at least one return value', 'error');
                 return;
             }
             
@@ -1153,119 +918,30 @@
                 id: Date.now()
             };
             
+            // Remove existing manual entry and add new one
             investments = investments.filter(inv => inv.type !== 'Manual Entry');
             investments.push(investment);
-            console.log('Added/Updated manual investment:', investment);
-            showToast('Investment updated successfully!');
+            
+            console.log('Manual investment added:', investment);
+            showToast('Investment added successfully!');
             
             updateComparison();
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
-            updateFormButton();
         }
-        
-        function updateFormButton() {
-            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
-            const hasManualInvestment = investments.some(inv => inv.type === 'Manual Entry');
-            
-            if (hasManualInvestment) {
-                submitBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Update Investment & Find Matches';
-            } else {
-                submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
-            }
+
+        function resetForm() {
+            document.getElementById('investmentForm').reset();
+            document.getElementById('dateReturns').valueAsDate = new Date();
+            investments = investments.filter(inv => inv.type !== 'Manual Entry');
+            updateComparison();
+            updateAnalysisButton();
+            document.getElementById('matchesSection').style.display = 'none';
+            showToast('Form reset');
         }
-        
-        function updateAnalysisButton() {
-            const analysisBtn = document.getElementById('generateAnalysisBtn');
-            const analysisContent = document.getElementById('findexAnalysisContent');
-            
-            const manualCount = investments.filter(inv => inv.type === 'Manual Entry').length;
-            const csvCount = investments.filter(inv => inv.type === 'CSV Database').length;
-            
-            if (manualCount === 1 && csvCount === 1) {
-                analysisBtn.disabled = false;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
-            } else {
-                analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>';
-            }
-        }
-        
-        function findMatchesForAllManualInvestments() {
-            const manualInvestments = investments.filter(inv => inv.type === 'Manual Entry');
-            
-            if (manualInvestments.length === 0) {
-                document.getElementById('matchesSection').style.display = 'none';
-                return;
-            }
-            
-            const avgProfile = {
-                growthAA: manualInvestments.reduce((sum, inv) => sum + inv.growthAA, 0) / manualInvestments.length,
-                defAA: manualInvestments.reduce((sum, inv) => sum + inv.defAA, 0) / manualInvestments.length,
-                date: new Date(manualInvestments.reduce((sum, inv) => sum + inv.date.getTime(), 0) / manualInvestments.length)
-            };
-            
-            console.log('Average profile for matching:', avgProfile);
-            findMatches(avgProfile);
-        }
-        
-        function findMatches(investment) {
-            console.log('Looking for matches for:', investment);
-            console.log('Available CSV data count:', csvData.length);
-            
-            const matches = csvData.filter(csvItem => {
-                if (!csvItem.growthAA || !csvItem.defAA || !csvItem.date) {
-                    return false;
-                }
-                
-                const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
-                const defDiff = Math.abs(csvItem.defAA - investment.defAA);
-                
-                return growthDiff <= 10 && defDiff <= 10;
-            });
-            
-            console.log('Found', matches.length, 'initial matches');
-            
-            const normalizeInvestmentName = (name) => {
-                return name.trim()
-                    .replace(/\s*\([^)]*\)?\s*$/, '')
-                    .replace(/\s+/g, ' ')
-                    .toLowerCase();
-            };
-            
-            const uniqueMatches = {};
-            matches.forEach(match => {
-                const normalizedName = normalizeInvestmentName(match.name);
-                const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
-                
-                if (!uniqueMatches[normalizedName] || dateDiff < uniqueMatches[normalizedName].dateDiff) {
-                    uniqueMatches[normalizedName] = {
-                        ...match,
-                        dateDiff: dateDiff,
-                        normalizedName: normalizedName
-                    };
-                }
-            });
-            
-            const filteredMatches = Object.values(uniqueMatches).map(match => {
-                const { dateDiff, normalizedName, ...cleanMatch } = match;
-                return cleanMatch;
-            });
-            
-            filteredMatches.sort((a, b) => {
-                const diffA = Math.abs(a.date.getTime() - investment.date.getTime());
-                const diffB = Math.abs(b.date.getTime() - investment.date.getTime());
-                return diffA - diffB;
-            });
-            
-            console.log('Filtered to', filteredMatches.length, 'unique matches (normalized names)');
-            displayMatches(filteredMatches.slice(0, 8), investment);
-        }
-        
-        window.addCSVMatch = function(matchIndex) {
-            console.log('=== ADD CSV MATCH CALLED ===');
-            console.log('Match index:', matchIndex);
-            console.log('Current matches:', currentMatches);
+
+        function addCSVMatch(matchIndex) {
+            console.log('Adding CSV match:', matchIndex);
             
             if (!currentMatches || matchIndex < 0 || matchIndex >= currentMatches.length) {
                 console.error('Invalid match index');
@@ -1273,8 +949,8 @@
             }
             
             const match = currentMatches[matchIndex];
-            console.log('Adding match:', match);
             
+            // Check if already exists
             const exists = investments.some(inv => 
                 inv.name === match.name && 
                 inv.date.getTime() === match.date.getTime() && 
@@ -1293,25 +969,341 @@
             };
             
             investments.push(newInvestment);
-            console.log('Investment added! Total investments:', investments.length);
             
             updateComparison();
             updateAnalysisButton();
             
-            const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
+            // Update button state
+            const button = document.querySelector(`[onclick="addCSVMatch(${matchIndex})"]`);
             if (button) {
                 button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
                 button.className = 'btn btn-secondary btn-sm';
                 button.disabled = true;
             }
             
-            showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
+            showToast(`Investment added to comparison!`);
+        }
+
+        // Make addCSVMatch available globally for onclick handlers
+        window.addCSVMatch = addCSVMatch;
+        window.removeInvestment = function(index) {
+            if (confirm('Are you sure you want to remove this investment?')) {
+                const removed = investments[index];
+                investments.splice(index, 1);
+                
+                if (removed.type === 'Manual Entry') {
+                    resetForm();
+                } else {
+                    updateComparison();
+                    updateAnalysisButton();
+                }
+                
+                showToast('Investment removed');
+            }
         };
-        
-        function displayMatches(matches, investment) {
-            console.log('Displaying matches:', matches.length);
-            currentMatches = matches;
+
+        function updateAnalysisButton() {
+            const analysisBtn = document.getElementById('generateAnalysisBtn');
+            const manualCount = investments.filter(inv => inv.type === 'Manual Entry').length;
+            const csvCount = investments.filter(inv => inv.type === 'CSV Database').length;
             
+            analysisBtn.disabled = !(manualCount === 1 && csvCount === 1);
+        }
+
+        function updateComparison() {
+            if (investments.length === 0) {
+                document.getElementById('comparisonSection').style.display = 'none';
+                document.getElementById('chartSection').style.display = 'none';
+                document.getElementById('findexAnalysisSection').style.display = 'none';
+                return;
+            }
+
+            // Show sections
+            document.getElementById('comparisonSection').style.display = 'block';
+            document.getElementById('findexAnalysisSection').style.display = 'block';
+
+            // Calculate highlights
+            const periods = ['oneYear', 'threeYears', 'fiveYears'];
+            const highlights = {};
+            
+            periods.forEach(period => {
+                const validValues = investments.filter(inv => inv[period] !== null).map(inv => inv[period]);
+                if (validValues.length > 0) {
+                    highlights[period] = {
+                        max: Math.max(...validValues),
+                        min: Math.min(...validValues)
+                    };
+                }
+            });
+
+            // Update table
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = investments.map((inv, index) => {
+                const getHighlightClass = (period, value) => {
+                    if (!highlights[period] || value === null) return '';
+                    if (value === highlights[period].max) return 'performance-high';
+                    if (value === highlights[period].min) return 'performance-low';
+                    return '';
+                };
+                
+                const displayName = formatInvestmentName(inv.name);
+                
+                return `
+                    <tr class="${inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry'}">
+                        <td><strong>${displayName}</strong></td>
+                        <td>${inv.date.toLocaleDateString('en-AU')}</td>
+                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
+                        <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
+                        <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
+                        <td>${inv.growthAA.toFixed(1)}%</td>
+                        <td>${inv.defAA.toFixed(1)}%</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="removeInvestment(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateChart();
+        }
+
+        function updateChart() {
+            const canvas = document.getElementById('performanceChart');
+            const ctx = canvas.getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            const labels = ['1 Year', '3 Years', '5 Years'];
+            const datasets = [];
+            
+            investments.forEach((inv, index) => {
+                const displayName = formatInvestmentName(inv.name);
+                const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
+                
+                const colors = [
+                    { bg: 'rgba(220, 53, 69, 0.7)', border: 'rgba(220, 53, 69, 1)' },
+                    { bg: 'rgba(0, 0, 0, 0.7)', border: 'rgba(0, 0, 0, 1)' },
+                    { bg: 'rgba(128, 128, 128, 0.7)', border: 'rgba(128, 128, 128, 1)' },
+                    { bg: 'rgba(169, 169, 169, 0.7)', border: 'rgba(169, 169, 169, 1)' }
+                ];
+                
+                const color = colors[index % colors.length];
+                
+                datasets.push({
+                    label: shortName,
+                    data: [
+                        inv.oneYear || 0,
+                        inv.threeYears || 0,
+                        inv.fiveYears || 0
+                    ],
+                    backgroundColor: color.bg,
+                    borderColor: color.border,
+                    borderWidth: 2
+                });
+            });
+            
+            performanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: value => value + '%' }
+                        }
+                    }
+                }
+            });
+            
+            document.getElementById('chartSection').style.display = 'block';
+        }
+
+        function formatInvestmentName(name) {
+            if (currentMode === 'client') {
+                return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
+            } else {
+                if (name.toLowerCase().includes('mda') && !name.toLowerCase().includes('findex')) {
+                    return name.replace(/\bMDA\b/gi, 'Findex MDA');
+                }
+                return name;
+            }
+        }
+
+        function generateFindexAnalysis() {
+            const manual = investments.find(inv => inv.type === 'Manual Entry');
+            const recommended = investments.find(inv => inv.type === 'CSV Database');
+            
+            if (!manual || !recommended) {
+                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
+                return;
+            }
+            
+            const analysisText = generateAnalysisText(manual, recommended);
+            
+            const analysisHTML = `
+                <div class="findex-analysis">
+                    <div class="analysis-header">
+                        <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
+                        <small>Comparative analysis between your current investment and recommended option</small>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h6><i class="bi bi-graph-up"></i> Performance Comparison Summary</h6>
+                        <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
+                        
+                        <div class="findex-highlight">
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided ($${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
+        }
+
+        function generateAnalysisText(manual, recommended) {
+            const investmentValue = manual.value || 100000;
+            const manualName = formatInvestmentName(manual.name);
+            const recommendedName = formatInvestmentName(recommended.name);
+            
+            let analysis = '';
+            
+            if (manual.oneYear !== null && recommended.oneYear !== null) {
+                const diff1Y = recommended.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
+                const absDiff1Y = Math.abs(diff1Y);
+                const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
+                
+                analysis += `1 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+            }
+            
+            if (manual.threeYears !== null && recommended.threeYears !== null) {
+                const diff3Y = recommended.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
+                const absDiff3Y = Math.abs(diff3Y);
+                const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
+                const dollarDiff3Y = (investmentValue * compoundDiff3Y);
+                
+                analysis += `3 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+            }
+            
+            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
+                const diff5Y = recommended.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
+                const absDiff5Y = Math.abs(diff5Y);
+                const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
+                const dollarDiff5Y = (investmentValue * compoundDiff5Y);
+                
+                analysis += `5 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+            }
+            
+            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
+            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
+            
+            analysis += `PORTFOLIO COMPARISON:\n`;
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            
+            return analysis;
+        }
+
+        // Placeholder functions for save/load/export - simplified for now
+        function saveData() {
+            showToast('Save functionality - placeholder');
+        }
+
+        function loadSavedClientsList() {
+            // Placeholder
+        }
+
+        function toggleLoadSection() {
+            showToast('Load functionality - placeholder');
+        }
+
+        function exportToPDF() {
+            window.print();
+        }
+
+        function loadCSVData() {
+            // Simplified CSV data for testing
+            csvData = [
+                {
+                    name: 'MDA Active Growth - Unlisted (No TDs)',
+                    oneYear: 8.5,
+                    threeYears: 7.2,
+                    fiveYears: 9.1,
+                    growthAA: 70,
+                    defAA: 30,
+                    date: new Date('2024-12-31'),
+                    type: 'CSV Database'
+                },
+                {
+                    name: 'Passive MDA Balanced',
+                    oneYear: 6.8,
+                    threeYears: 6.5,
+                    fiveYears: 7.8,
+                    growthAA: 60,
+                    defAA: 40,
+                    date: new Date('2024-12-31'),
+                    type: 'CSV Database'
+                }
+            ];
+            
+            document.getElementById('loadingState').style.display = 'none';
+            console.log('CSV data loaded (placeholder)');
+        }
+
+        function findMatchesForAllManualInvestments() {
+            const manualInvestments = investments.filter(inv => inv.type === 'Manual Entry');
+            
+            if (manualInvestments.length === 0) {
+                document.getElementById('matchesSection').style.display = 'none';
+                return;
+            }
+            
+            const avgProfile = {
+                growthAA: manualInvestments.reduce((sum, inv) => sum + inv.growthAA, 0) / manualInvestments.length,
+                defAA: manualInvestments.reduce((sum, inv) => sum + inv.defAA, 0) / manualInvestments.length,
+                date: new Date()
+            };
+            
+            findMatches(avgProfile);
+        }
+
+        function findMatches(investment) {
+            const matches = csvData.filter(csvItem => {
+                const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
+                const defDiff = Math.abs(csvItem.defAA - investment.defAA);
+                return growthDiff <= 10 && defDiff <= 10;
+            });
+            
+            displayMatches(matches.slice(0, 8), investment);
+        }
+
+        function displayMatches(matches, investment) {
+            currentMatches = matches;
             const matchesSection = document.getElementById('matchesSection');
             const matchesList = document.getElementById('matchesList');
             
@@ -1321,31 +1313,10 @@
                 return;
             }
             
-            const userDate = investment.date.getTime();
-            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-            
-            const recentMatches = matches.filter(match => {
-                const dateDiff = Math.abs(match.date.getTime() - userDate);
-                return dateDiff <= sixMonthsMs;
-            });
-            
-            const displayMatches = recentMatches.slice(0, 8);
-            
-            if (displayMatches.length === 0) {
-                matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
-                matchesSection.style.display = 'block';
-                return;
-            }
-            
-            currentMatches = displayMatches;
-            
             let html = '';
-            
-            displayMatches.forEach((match, index) => {
+            matches.forEach((match, index) => {
                 const alreadyAdded = investments.some(inv => 
-                    inv.name === match.name && 
-                    inv.date.getTime() === match.date.getTime() && 
-                    inv.type === 'CSV Database'
+                    inv.name === match.name && inv.type === 'CSV Database'
                 );
                 
                 const displayName = formatInvestmentName(match.name);
@@ -1391,285 +1362,6 @@
             matchesList.innerHTML = html;
             matchesSection.style.display = 'block';
         }
-        
-        function formatInvestmentName(name) {
-            if (currentMode === 'client') {
-                return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
-            } else {
-                if (name.toLowerCase().includes('mda') && !name.toLowerCase().includes('findex')) {
-                    return name.replace(/\bMDA\b/gi, 'Findex MDA');
-                }
-                return name;
-            }
-        }
-        
-        function removeInvestment(index) {
-            if (confirm('Are you sure you want to remove this investment from the comparison?')) {
-                const removedInvestment = investments[index];
-                investments.splice(index, 1);
-                
-                if (removedInvestment.type === 'Manual Entry') {
-                    document.getElementById('investmentForm').reset();
-                    document.getElementById('dateReturns').valueAsDate = new Date();
-                }
-                
-                updateComparison();
-                updateAnalysisButton();
-                updateFormButton();
-                
-                if (investments.filter(inv => inv.type === 'Manual Entry').length > 0) {
-                    findMatchesForAllManualInvestments();
-                } else {
-                    document.getElementById('matchesSection').style.display = 'none';
-                }
-            }
-        }
-        
-        function resetForm() {
-            document.getElementById('investmentForm').reset();
-            document.getElementById('dateReturns').valueAsDate = new Date();
-            document.getElementById('growthAA').style.borderColor = '#e1e8ed';
-            document.getElementById('defAA').style.borderColor = '#e1e8ed';
-            
-            investments = investments.filter(inv => inv.type !== 'Manual Entry');
-            
-            updateComparison();
-            updateAnalysisButton();
-            updateFormButton();
-            
-            if (investments.filter(inv => inv.type === 'Manual Entry').length === 0) {
-                document.getElementById('matchesSection').style.display = 'none';
-            }
-            
-            showToast('Form reset - manual investment removed');
-        }
-        
-        function updateComparison() {
-            if (investments.length === 0) {
-                document.getElementById('comparisonSection').style.display = 'none';
-                document.getElementById('chartSection').style.display = 'none';
-                document.getElementById('findexAnalysisSection').style.display = 'none';
-                return;
-            }
-            
-            const periods = ['oneYear', 'threeYears', 'fiveYears'];
-            const highlights = {};
-            
-            periods.forEach(period => {
-                const validValues = investments.filter(inv => inv[period] !== null).map(inv => inv[period]);
-                if (validValues.length > 0) {
-                    highlights[period] = {
-                        max: Math.max(...validValues),
-                        min: Math.min(...validValues)
-                    };
-                }
-            });
-            
-            const tbody = document.getElementById('comparisonTableBody');
-            tbody.innerHTML = investments.map((inv, index) => {
-                const getHighlightClass = (period, value) => {
-                    if (!highlights[period] || value === null) return '';
-                    if (value === highlights[period].max) return 'performance-high';
-                    if (value === highlights[period].min) return 'performance-low';
-                    return '';
-                };
-                
-                const rowClass = inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry';
-                const displayName = formatInvestmentName(inv.name);
-                
-                return `
-                    <tr class="${rowClass}">
-                        <td><strong>${displayName}</strong></td>
-                        <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
-                        <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
-                        <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
-                        <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
-                        <td>${inv.growthAA.toFixed(1)}%</td>
-                        <td>${inv.defAA.toFixed(1)}%</td>
-                        <td>
-                            <button class="btn btn-danger btn-sm" onclick="removeInvestment(${index})">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-            
-            document.getElementById('comparisonSection').style.display = 'block';
-            document.getElementById('findexAnalysisSection').style.display = 'block';
-            updateChart();
-        }
-        
-        function updateChart() {
-            const canvas = document.getElementById('performanceChart');
-            const ctx = canvas.getContext('2d');
-            
-            if (performanceChart) {
-                performanceChart.destroy();
-            }
-            
-            const labels = ['1 Year', '3 Years', '5 Years'];
-            const datasets = [];
-            
-            investments.forEach((inv, index) => {
-                const displayName = formatInvestmentName(inv.name);
-                const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
-                
-                const colors = [
-                    { bg: 'rgba(220, 53, 69, 0.7)', border: 'rgba(220, 53, 69, 1)' },
-                    { bg: 'rgba(0, 0, 0, 0.7)', border: 'rgba(0, 0, 0, 1)' },
-                    { bg: 'rgba(128, 128, 128, 0.7)', border: 'rgba(128, 128, 128, 1)' },
-                    { bg: 'rgba(169, 169, 169, 0.7)', border: 'rgba(169, 169, 169, 1)' }
-                ];
-                
-                const color = colors[index % colors.length];
-                
-                datasets.push({
-                    label: shortName,
-                    data: [
-                        inv.oneYear || 0,
-                        inv.threeYears || 0,
-                        inv.fiveYears || 0
-                    ],
-                    backgroundColor: color.bg,
-                    borderColor: color.border,
-                    borderWidth: 2
-                });
-            });
-            
-            performanceChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 0,
-                                minRotation: 0
-                            }
-                        }
-                    }
-                }
-            });
-            
-            document.getElementById('chartSection').style.display = 'block';
-        }
-        
-        function generateFindexAnalysis() {
-            const manual = investments.find(inv => inv.type === 'Manual Entry');
-            const recommended = investments.find(inv => inv.type === 'CSV Database');
-            
-            if (!manual || !recommended) {
-                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
-                return;
-            }
-            
-            const analysisText = generateAnalysisText(manual, recommended);
-            
-            const analysisHTML = `
-                <div class="findex-analysis">
-                    <div class="analysis-header">
-                        <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and recommended option</small>
-                    </div>
-                    
-                    <div class="analysis-section">
-                        <h6><i class="bi bi-graph-up"></i> Performance Comparison Summary</h6>
-                        <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
-                        
-                        <div class="findex-highlight">
-                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
-        }
-        
-        function generateAnalysisText(manual, recommended) {
-            const investmentValue = manual.value || 100000;
-            
-            const manualName = formatInvestmentName(manual.name);
-            const recommendedName = formatInvestmentName(recommended.name);
-            
-            let analysis = '';
-            
-            if (manual.oneYear !== null && recommended.oneYear !== null) {
-                const diff1Y = recommended.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
-                const absDiff1Y = Math.abs(diff1Y);
-                const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
-                
-                analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
-            }
-            
-            if (manual.threeYears !== null && recommended.threeYears !== null) {
-                const diff3Y = recommended.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
-                const absDiff3Y = Math.abs(diff3Y);
-                const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
-                const dollarDiff3Y = (investmentValue * compoundDiff3Y);
-                
-                analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
-            }
-            
-            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
-                const diff5Y = recommended.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
-                const absDiff5Y = Math.abs(diff5Y);
-                const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
-                const dollarDiff5Y = (investmentValue * compoundDiff5Y);
-                
-                analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
-            }
-            
-            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
-            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
-            
-            analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
-            
-            return analysis;
-        }
-        
-        window.addEventListener('resize', function() {
-            if (performanceChart) {
-                performanceChart.resize();
-            }
-        });
     </script>
 </body>
 </html>
