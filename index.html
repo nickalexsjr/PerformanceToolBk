@@ -140,6 +140,15 @@
             background: #c82333;
         }
 
+        .btn-delete {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #5a6268;
+}
+
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -555,20 +564,23 @@
                 </div>
                 
                 <div class="save-section">
-                    <input type="text" id="clientName" placeholder="Client Name" />
-                    <select id="savedClients" style="display: none;">
-                        <option value="">Select saved client</option>
-                    </select>
-                    <button class="btn-save" onclick="saveData()">
-                        <i class="bi bi-save"></i> Save
-                    </button>
-                    <button class="btn-load" onclick="toggleLoadSection()">
-                        <i class="bi bi-folder-open"></i> Load
-                    </button>
-                    <button class="btn-export" onclick="exportToPDF()">
-                        <i class="bi bi-file-pdf"></i> Export PDF
-                    </button>
-                </div>
+    <input type="text" id="clientName" placeholder="Client Name" />
+    <select id="savedClients" style="display: none;">
+        <option value="">Select saved client</option>
+    </select>
+    <button class="btn-save" onclick="saveData()">
+        <i class="bi bi-save"></i> Save
+    </button>
+    <button class="btn-load" onclick="toggleLoadSection()">
+        <i class="bi bi-folder-open"></i> Load
+    </button>
+    <button class="btn-delete" onclick="deleteData()">
+        <i class="bi bi-trash"></i> Delete
+    </button>
+    <button class="btn-export" onclick="exportToPDF()">
+        <i class="bi bi-file-pdf"></i> Export PDF
+    </button>
+</div>
             </div>
         </div>
         
@@ -924,6 +936,50 @@
                 showToast('Error loading data');
             }
         }
+
+function deleteData() {
+    const clientName = document.getElementById('clientName').value.trim();
+    if (!clientName) {
+        showToast('Please enter a client name to delete', 'error');
+        return;
+    }
+    
+    const savedData = localStorage.getItem('investmentToolData_' + clientName);
+    if (!savedData) {
+        showToast('No saved data found for ' + clientName, 'error');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete all saved data for "${clientName}"? This action cannot be undone.`)) {
+        try {
+            localStorage.removeItem('investmentToolData_' + clientName);
+            showToast('Data deleted successfully for ' + clientName);
+            
+            // Clear the form and reset everything
+            document.getElementById('clientName').value = '';
+            document.getElementById('investmentForm').reset();
+            document.getElementById('dateReturns').valueAsDate = new Date();
+            
+            // Clear all investments
+            investments = [];
+            updateComparison();
+            updateAnalysisButton();
+            updateFormButton();
+            
+            // Hide sections
+            document.getElementById('matchesSection').style.display = 'none';
+            document.getElementById('comparisonSection').style.display = 'none';
+            document.getElementById('chartSection').style.display = 'none';
+            document.getElementById('findexAnalysisSection').style.display = 'none';
+            
+            // Refresh the saved clients list
+            loadSavedClientsList();
+            
+        } catch (e) {
+            showToast('Error deleting data', 'error');
+        }
+    }
+}
         
         function showToast(message, type = 'success') {
             const toast = document.getElementById('successToast');
