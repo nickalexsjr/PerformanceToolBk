@@ -409,11 +409,6 @@
             color: #6c757d;
         }
 
-        .match-actions {
-            display: flex;
-            justify-content: flex-end;
-        }
-
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -459,30 +454,6 @@
             font-weight: 600;
         }
 
-        .performance-indicator {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 2px;
-        }
-
-        .indicator-outperform {
-            background: #28a745;
-            color: white;
-        }
-
-        .indicator-underperform {
-            background: #dc3545;
-            color: white;
-        }
-
-        .indicator-neutral {
-            background: #6c757d;
-            color: white;
-        }
-
         .findex-highlight {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #dc3545;
@@ -518,14 +489,6 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
-        }
-
-        .allocation-display {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 14px;
         }
 
         .success-toast {
@@ -570,93 +533,6 @@
         .toggle-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-        }
-
-        .matches-content.minimized {
-            max-height: 300px;
-            overflow: hidden;
-        }
-
-        .matches-content.expanded {
-            max-height: none;
-        }
-
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-            }
-            
-            .glass-card, .comparison-table, .chart-container, .findex-analysis {
-                background: white !important;
-                color: black !important;
-                box-shadow: none !important;
-                border: 1px solid #ddd !important;
-            }
-            
-            #matchesSection {
-                display: none !important;
-            }
-            
-            .header-controls {
-                display: none !important;
-            }
-            
-            .disclaimer {
-                page-break-before: always;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .input-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
-            h1 {
-                font-size: 1.6rem;
-            }
-            
-            .table-responsive {
-                font-size: 14px;
-            }
-            
-            .form-control {
-                font-size: 16px !important;
-                padding: 16px !important;
-                height: 52px !important;
-            }
-
-            .header-controls {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .header-left {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-
-            .findex-logo {
-                height: 90px;
-                max-width: 180px;
-            }
-
-            .top-controls {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .save-section {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .match-metrics {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
         }
     </style>
 </head>
@@ -860,15 +736,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
-        // GLOBAL VARIABLES AND INITIALIZATION
         let csvData = [];
         let investments = [];
         let performanceChart = null;
         let currentMatches = [];
-        let currentMode = 'client'; // client or adviser
+        let currentMode = 'client';
         let matchesMinimized = false;
         
-        // Client mode name mapping for all CSV entries
         const clientModeNames = {
             'MDA Active Growth - Unlisted (No TDs)': 'Findex Growth Portfolio 1',
             'MDA Active Growth Plus - Unlisted (No TDs)': 'Findex Growth Plus Portfolio 1',
@@ -886,52 +760,37 @@
             'Passive MDA Defensive': 'Findex Defensive Portfolio 2'
         };
         
-        // Load CSV data automatically when page loads
         document.addEventListener('DOMContentLoaded', function() {
             loadCSVData();
-            
-            // Set default date to today
             document.getElementById('dateReturns').valueAsDate = new Date();
-            
-            // Add validation for allocation percentages
             document.getElementById('growthAA').addEventListener('input', validateAllocations);
             document.getElementById('defAA').addEventListener('input', validateAllocations);
-            
-            // Add input formatting for comma in investment value
             setupInputFormatting();
-            
-            // Load saved clients list
             loadSavedClientsList();
         });
         
-        // Setup input formatting for comma separation
         function setupInputFormatting() {
             const investmentValueInput = document.getElementById('investmentValue');
-            
             investmentValueInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^\d]/g, '');
                 if (value) {
-                    // Add commas for thousands
                     value = parseInt(value).toLocaleString();
                     e.target.value = value;
                 }
             });
         }
         
-        // Toggle matches section exactly as requested
         function toggleMatches() {
             const content = document.getElementById('matchesList');
             const icon = document.getElementById('toggleIcon');
             const text = document.getElementById('toggleText');
             
             if (matchesMinimized) {
-                // Show content
                 content.style.display = 'block';
                 icon.className = 'bi bi-arrows-collapse';
                 text.textContent = 'Minimize';
                 matchesMinimized = false;
             } else {
-                // Hide content completely
                 content.style.display = 'none';
                 icon.className = 'bi bi-arrows-expand';
                 text.textContent = 'Expand';
@@ -939,28 +798,22 @@
             }
         }
         
-        // Mode management
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
-            // Update any existing investments to reflect mode change
             updateComparison();
             
-            // Regenerate analysis if it exists
             const analysisContent = document.getElementById('findexAnalysisContent');
             if (analysisContent.innerHTML.includes('Performance Analysis Report')) {
                 generateFindexAnalysis();
             }
             
-            // Update matches section if visible
             if (document.getElementById('matchesSection').style.display !== 'none') {
                 findMatchesForAllManualInvestments();
             }
         }
         
-        // Load/Save functionality
         function loadSavedClientsList() {
             const savedClients = [];
             for (let i = 0; i < localStorage.length; i++) {
@@ -1032,20 +885,17 @@
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     
-                    // Restore investments
                     investments = data.investments.map(inv => ({
                         ...inv,
                         date: new Date(inv.date)
                     }));
                     
-                    // Restore mode
                     if (data.mode) {
                         currentMode = data.mode;
                         document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
                         document.querySelector(`.mode-btn[onclick="setMode('${data.mode}')"]`).classList.add('active');
                     }
                     
-                    // Restore form data if there's a manual investment
                     const manualInvestment = investments.find(inv => inv.type === 'Manual Entry');
                     if (manualInvestment) {
                         document.getElementById('investmentName').value = manualInvestment.name;
@@ -1058,84 +908,7 @@
                         document.getElementById('defAA').value = manualInvestment.defAA;
                     }
                     
-                    // Update UI
                     updateComparison();
-                updateAnalysisButton();
-                updateFormButton();
-                
-                // Re-display matches if there are still manual investments
-                if (investments.filter(inv => inv.type === 'Manual Entry').length > 0) {
-                    findMatchesForAllManualInvestments();
-                } else {
-                    document.getElementById('matchesSection').style.display = 'none';
-                }
-            }
-        }
-        
-        // Reset form
-        function resetForm() {
-            document.getElementById('investmentForm').reset();
-            document.getElementById('dateReturns').valueAsDate = new Date();
-            document.getElementById('growthAA').style.borderColor = '#e1e8ed';
-            document.getElementById('defAA').style.borderColor = '#e1e8ed';
-            
-            // Remove any manual investments
-            investments = investments.filter(inv => inv.type !== 'Manual Entry');
-            
-            // Update everything
-            updateComparison();
-            updateAnalysisButton();
-            updateFormButton();
-            
-            // Hide matches section if no manual investments
-            if (investments.filter(inv => inv.type === 'Manual Entry').length === 0) {
-                document.getElementById('matchesSection').style.display = 'none';
-            }
-            
-            showToast('Form reset - manual investment removed');
-        }
-        
-        // Update comparison table and chart
-        function updateComparison() {
-            if (investments.length === 0) {
-                document.getElementById('comparisonSection').style.display = 'none';
-                document.getElementById('chartSection').style.display = 'none';
-                document.getElementById('findexAnalysisSection').style.display = 'none';
-                return;
-            }
-            
-            // Calculate performance highlights - only for performance columns
-            const periods = ['oneYear', 'threeYears', 'fiveYears'];
-            const highlights = {};
-            
-            periods.forEach(period => {
-                const validValues = investments.filter(inv => inv[period] !== null).map(inv => inv[period]);
-                if (validValues.length > 0) {
-                    highlights[period] = {
-                        max: Math.max(...validValues),
-                        min: Math.min(...validValues)
-                    };
-                }
-            });
-            
-            // Update table
-            const tbody = document.getElementById('comparisonTableBody');
-            tbody.innerHTML = investments.map((inv, index) => {
-                const getHighlightClass = (period, value) => {
-                    if (!highlights[period] || value === null) return '';
-                    if (value === highlights[period].max) return 'performance-high';
-                    if (value === highlights[period].min) return 'performance-low';
-                    return '';
-                };
-                
-                const rowClass = inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry';
-                const displayName = formatInvestmentName(inv.name);
-                
-                return `
-                    <tr class="${rowClass}">
-                        <td><strong>${displayName}</strong></td>
-                        <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? 'rison();
                     updateAnalysisButton();
                     updateFormButton();
                     
@@ -1148,13 +921,11 @@
             }
         }
         
-        // Show toast notification
         function showToast(message, type = 'success') {
             const toast = document.getElementById('successToast');
             const messageElement = document.getElementById('toastMessage');
             messageElement.textContent = message;
             
-            // Set color based on type
             if (type === 'error') {
                 toast.style.background = '#dc3545';
             } else {
@@ -1167,18 +938,13 @@
             }, 3000);
         }
         
-        // PDF Export functionality
         function exportToPDF() {
-            // Minimize matches section before export
             if (!matchesMinimized) {
                 toggleMatches();
             }
-            
-            // Use the browser's print functionality
             window.print();
         }
         
-        // Validate that allocations total 100%
         function validateAllocations() {
             const growthText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
             const defensiveText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
@@ -1207,9 +973,7 @@
             }
         }
         
-        // Load CSV data
         function loadCSVData() {
-            // Try multiple possible paths
             const csvPaths = ['./2025(in).csv', '2025(in).csv', 'PerformanceToolBk/2025(in).csv'];
             
             function tryLoadCSV(pathIndex = 0) {
@@ -1243,7 +1007,6 @@
             tryLoadCSV();
         }
         
-        // Parse CSV data with correct column structure
         function parseCSV(csvText) {
             Papa.parse(csvText, {
                 header: true,
@@ -1256,7 +1019,6 @@
                         return;
                     }
                     
-                    // Check the headers
                     const headers = Object.keys(results.data[0]);
                     console.log('CSV Headers:', headers);
                     
@@ -1272,18 +1034,16 @@
                             
                             console.log('Parsing date string:', dateStr);
                             
-                            // Handle Australian date format (DD/MM/YYYY)
                             const dateString = dateStr.toString().trim();
                             const parts = dateString.split('/');
                             
                             if (parts.length === 3) {
                                 const day = parseInt(parts[0], 10);
-                                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript
+                                const month = parseInt(parts[1], 10) - 1;
                                 const year = parseInt(parts[2], 10);
                                 
                                 console.log('Date parts:', { day, month: month + 1, year });
                                 
-                                // Validate the parts
                                 if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 2020 && year <= 2030) {
                                     const parsedDate = new Date(year, month, day);
                                     console.log('Parsed date:', parsedDate);
@@ -1291,12 +1051,10 @@
                                 }
                             }
                             
-                            // Fallback to default Date parsing
                             console.warn('Fallback date parsing for:', dateString);
                             return new Date(dateString);
                         };
                         
-                        // Try different possible header names
                         const name = row['INVESTMENT NAME'] || row['Investment Name'] || row['Name'] || '';
                         const oneYear = parsePerformance(row['1 YEAR'] || row['1Y'] || row['1 Year']);
                         const threeYears = parsePerformance(row['3 YEAR'] || row['3Y'] || row['3 Years']);
@@ -1316,7 +1074,6 @@
                             type: 'CSV Database'
                         };
                         
-                        // Debug log for first few entries
                         if (index < 3) {
                             console.log(`Investment ${index}:`, investment);
                         }
@@ -1340,22 +1097,18 @@
             });
         }
         
-        // Form handling
         document.getElementById('investmentForm').addEventListener('submit', function(e) {
             e.preventDefault();
             addManualInvestment();
         });
         
-        // Add or update manual investment
         function addManualInvestment() {
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
             
-            // Parse investment value (remove commas)
             const valueText = document.getElementById('investmentValue').value.replace(/[^\d]/g, '');
             const value = parseFloat(valueText);
             
-            // Parse percentage values (remove % signs)
             const oneYearText = document.getElementById('oneYear').value.replace(/[^\d.-]/g, '');
             const threeYearsText = document.getElementById('threeYears').value.replace(/[^\d.-]/g, '');
             const fiveYearsText = document.getElementById('fiveYears').value.replace(/[^\d.-]/g, '');
@@ -1368,13 +1121,11 @@
             const growthAA = parseFloat(growthAAText);
             const defAA = parseFloat(defAAText);
             
-            // Validation - require name, date, value, and allocations
             if (!name || !dateStr || isNaN(value) || isNaN(growthAA) || isNaN(defAA)) {
                 showToast('Please fill in investment name, date, value, and allocation percentages');
                 return;
             }
             
-            // Check if at least one return value is provided
             if (oneYear === null && threeYears === null && fiveYears === null) {
                 showToast('Please provide at least one return value (1, 3, or 5 year)');
                 return;
@@ -1398,10 +1149,7 @@
                 id: Date.now()
             };
             
-            // Enforce single manual investment - remove any existing manual investments
             investments = investments.filter(inv => inv.type !== 'Manual Entry');
-            
-            // Add the new manual investment
             investments.push(investment);
             console.log('Added/Updated manual investment:', investment);
             showToast('Investment updated successfully!');
@@ -1410,11 +1158,8 @@
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
             updateFormButton();
-            
-            // Keep form data persistent - don't reset
         }
         
-        // Update the form button text based on whether we have a manual investment
         function updateFormButton() {
             const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
             const hasManualInvestment = investments.some(inv => inv.type === 'Manual Entry');
@@ -1426,12 +1171,10 @@
             }
         }
         
-        // Update analysis button state
         function updateAnalysisButton() {
             const analysisBtn = document.getElementById('generateAnalysisBtn');
             const analysisContent = document.getElementById('findexAnalysisContent');
             
-            // Enable only if exactly 2 investments: 1 manual + 1 recommended
             const manualCount = investments.filter(inv => inv.type === 'Manual Entry').length;
             const csvCount = investments.filter(inv => inv.type === 'CSV Database').length;
             
@@ -1444,7 +1187,6 @@
             }
         }
         
-        // Find matches for all manual investments (using average)
         function findMatchesForAllManualInvestments() {
             const manualInvestments = investments.filter(inv => inv.type === 'Manual Entry');
             
@@ -1453,7 +1195,6 @@
                 return;
             }
             
-            // Calculate average profile for all manual investments
             const avgProfile = {
                 growthAA: manualInvestments.reduce((sum, inv) => sum + inv.growthAA, 0) / manualInvestments.length,
                 defAA: manualInvestments.reduce((sum, inv) => sum + inv.defAA, 0) / manualInvestments.length,
@@ -1461,11 +1202,9 @@
             };
             
             console.log('Average profile for matching:', avgProfile);
-            
             findMatches(avgProfile);
         }
         
-        // Find matches based on allocation and date
         function findMatches(investment) {
             console.log('Looking for matches for:', investment);
             console.log('Available CSV data count:', csvData.length);
@@ -1475,7 +1214,6 @@
                     return false;
                 }
                 
-                // Check allocation variance (within 10%)
                 const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
                 const defDiff = Math.abs(csvItem.defAA - investment.defAA);
                 
@@ -1484,15 +1222,13 @@
             
             console.log('Found', matches.length, 'initial matches');
             
-            // Normalize investment names to handle missing brackets and variations
             const normalizeInvestmentName = (name) => {
                 return name.trim()
-                    .replace(/\s*\([^)]*\)?\s*$/, '') // Remove trailing parentheses (complete or incomplete)
-                    .replace(/\s+/g, ' ') // Normalize whitespace
+                    .replace(/\s*\([^)]*\)?\s*$/, '')
+                    .replace(/\s+/g, ' ')
                     .toLowerCase();
             };
             
-            // Group by normalized investment name and keep only the closest date for each
             const uniqueMatches = {};
             matches.forEach(match => {
                 const normalizedName = normalizeInvestmentName(match.name);
@@ -1507,9 +1243,7 @@
                 }
             });
             
-            // Convert back to array and sort by date proximity
             const filteredMatches = Object.values(uniqueMatches).map(match => {
-                // Remove the dateDiff and normalizedName properties we added for comparison
                 const { dateDiff, normalizedName, ...cleanMatch } = match;
                 return cleanMatch;
             });
@@ -1521,11 +1255,9 @@
             });
             
             console.log('Filtered to', filteredMatches.length, 'unique matches (normalized names)');
-            
-            displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
+            displayMatches(filteredMatches.slice(0, 8), investment);
         }
         
-        // Global function to add CSV match
         window.addCSVMatch = function(matchIndex) {
             console.log('=== ADD CSV MATCH CALLED ===');
             console.log('Match index:', matchIndex);
@@ -1539,7 +1271,6 @@
             const match = currentMatches[matchIndex];
             console.log('Adding match:', match);
             
-            // Check if already added
             const exists = investments.some(inv => 
                 inv.name === match.name && 
                 inv.date.getTime() === match.date.getTime() && 
@@ -1551,7 +1282,6 @@
                 return;
             }
             
-            // Add to investments
             const newInvestment = {
                 ...match,
                 type: 'CSV Database',
@@ -1561,11 +1291,9 @@
             investments.push(newInvestment);
             console.log('Investment added! Total investments:', investments.length);
             
-            // Update the UI
             updateComparison();
             updateAnalysisButton();
             
-            // Update button state
             const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
             if (button) {
                 button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
@@ -1576,7 +1304,6 @@
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         };
         
-        // Display matches exactly like image 2 - single row format
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1590,7 +1317,6 @@
                 return;
             }
             
-            // Filter matches to only show recent dates (within 6 months of user's date)
             const userDate = investment.date.getTime();
             const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
             
@@ -1607,21 +1333,17 @@
                 return;
             }
             
-            // Update currentMatches to only include displayed matches
             currentMatches = displayMatches;
             
-            // Use original card display
             let html = '';
             
             displayMatches.forEach((match, index) => {
-                // Check if already added
                 const alreadyAdded = investments.some(inv => 
                     inv.name === match.name && 
                     inv.date.getTime() === match.date.getTime() && 
                     inv.type === 'CSV Database'
                 );
                 
-                // Format name based on mode
                 const displayName = formatInvestmentName(match.name);
                 
                 html += `
@@ -1663,13 +1385,10 @@
             matchesSection.style.display = 'block';
         }
         
-        // Format investment name based on current mode
         function formatInvestmentName(name) {
             if (currentMode === 'client') {
-                // Use the client mode mapping for all CSV names
                 return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
             } else {
-                // Adviser mode - add Findex before MDA if not already there
                 if (name.toLowerCase().includes('mda') && !name.toLowerCase().includes('findex')) {
                     return name.replace(/\bMDA\b/gi, 'Findex MDA');
                 }
@@ -1677,19 +1396,85 @@
             }
         }
         
-        // Remove investment from portfolio
         function removeInvestment(index) {
             if (confirm('Are you sure you want to remove this investment from the comparison?')) {
                 const removedInvestment = investments[index];
                 investments.splice(index, 1);
                 
-                // If we removed the manual investment, clear the form
                 if (removedInvestment.type === 'Manual Entry') {
                     document.getElementById('investmentForm').reset();
                     document.getElementById('dateReturns').valueAsDate = new Date();
                 }
                 
-                updateCompa + inv.value.toLocaleString() : 'N/A'}</td>
+                updateComparison();
+                updateAnalysisButton();
+                updateFormButton();
+                
+                if (investments.filter(inv => inv.type === 'Manual Entry').length > 0) {
+                    findMatchesForAllManualInvestments();
+                } else {
+                    document.getElementById('matchesSection').style.display = 'none';
+                }
+            }
+        }
+        
+        function resetForm() {
+            document.getElementById('investmentForm').reset();
+            document.getElementById('dateReturns').valueAsDate = new Date();
+            document.getElementById('growthAA').style.borderColor = '#e1e8ed';
+            document.getElementById('defAA').style.borderColor = '#e1e8ed';
+            
+            investments = investments.filter(inv => inv.type !== 'Manual Entry');
+            
+            updateComparison();
+            updateAnalysisButton();
+            updateFormButton();
+            
+            if (investments.filter(inv => inv.type === 'Manual Entry').length === 0) {
+                document.getElementById('matchesSection').style.display = 'none';
+            }
+            
+            showToast('Form reset - manual investment removed');
+        }
+        
+        function updateComparison() {
+            if (investments.length === 0) {
+                document.getElementById('comparisonSection').style.display = 'none';
+                document.getElementById('chartSection').style.display = 'none';
+                document.getElementById('findexAnalysisSection').style.display = 'none';
+                return;
+            }
+            
+            const periods = ['oneYear', 'threeYears', 'fiveYears'];
+            const highlights = {};
+            
+            periods.forEach(period => {
+                const validValues = investments.filter(inv => inv[period] !== null).map(inv => inv[period]);
+                if (validValues.length > 0) {
+                    highlights[period] = {
+                        max: Math.max(...validValues),
+                        min: Math.min(...validValues)
+                    };
+                }
+            });
+            
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = investments.map((inv, index) => {
+                const getHighlightClass = (period, value) => {
+                    if (!highlights[period] || value === null) return '';
+                    if (value === highlights[period].max) return 'performance-high';
+                    if (value === highlights[period].min) return 'performance-low';
+                    return '';
+                };
+                
+                const rowClass = inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry';
+                const displayName = formatInvestmentName(inv.name);
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td><strong>${displayName}</strong></td>
+                        <td>${inv.date.toLocaleDateString('en-AU')}</td>
+                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
@@ -1709,7 +1494,6 @@
             updateChart();
         }
         
-        // Update performance chart - grouped bars
         function updateChart() {
             const canvas = document.getElementById('performanceChart');
             const ctx = canvas.getContext('2d');
@@ -1718,7 +1502,6 @@
                 performanceChart.destroy();
             }
             
-            // Create grouped data structure
             const labels = ['1 Year', '3 Years', '5 Years'];
             const datasets = [];
             
@@ -1726,7 +1509,6 @@
                 const displayName = formatInvestmentName(inv.name);
                 const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
                 
-                // Use Findex theme colors (red and black)
                 const colors = [
                     { bg: 'rgba(220, 53, 69, 0.7)', border: 'rgba(220, 53, 69, 1)' },
                     { bg: 'rgba(0, 0, 0, 0.7)', border: 'rgba(0, 0, 0, 1)' },
@@ -1792,7 +1574,6 @@
             document.getElementById('chartSection').style.display = 'block';
         }
         
-        // Generate template-based analysis
         function generateFindexAnalysis() {
             const manual = investments.find(inv => inv.type === 'Manual Entry');
             const recommended = investments.find(inv => inv.type === 'CSV Database');
@@ -1825,17 +1606,14 @@
             document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
         }
         
-        // Generate analysis text based on template
         function generateAnalysisText(manual, recommended) {
-            const investmentValue = manual.value || 100000; // Default to $100k if no value provided
+            const investmentValue = manual.value || 100000;
             
-            // Get formatted investment names
             const manualName = formatInvestmentName(manual.name);
             const recommendedName = formatInvestmentName(recommended.name);
             
             let analysis = '';
             
-            // 1 Year Analysis
             if (manual.oneYear !== null && recommended.oneYear !== null) {
                 const diff1Y = recommended.oneYear - manual.oneYear;
                 const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
@@ -1847,13 +1625,11 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
-            // 3 Year Analysis
             if (manual.threeYears !== null && recommended.threeYears !== null) {
                 const diff3Y = recommended.threeYears - manual.threeYears;
                 const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
                 const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
                 const absDiff3Y = Math.abs(diff3Y);
-                // Compound the difference over 3 years
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
@@ -1861,13 +1637,11 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-            // 5 Year Analysis
             if (manual.fiveYears !== null && recommended.fiveYears !== null) {
                 const diff5Y = recommended.fiveYears - manual.fiveYears;
                 const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
                 const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
                 const absDiff5Y = Math.abs(diff5Y);
-                // Compound the difference over 5 years
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
@@ -1875,7 +1649,6 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            // Portfolio Comparison - Updated format with growth difference percentage
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
             const higherGrowthPercentage = Math.max(manual.growthAA, recommended.growthAA);
@@ -1886,7 +1659,6 @@
             return analysis;
         }
         
-        // Handle window resize for chart
         window.addEventListener('resize', function() {
             if (performanceChart) {
                 performanceChart.resize();
@@ -1894,558 +1666,4 @@
         });
     </script>
 </body>
-</html>rison();
-                    updateAnalysisButton();
-                    updateFormButton();
-                    
-                    showToast('Data loaded successfully for ' + clientName);
-                } else {
-                    showToast('No saved data found for ' + clientName);
-                }
-            } catch (e) {
-                showToast('Error loading data');
-            }
-        }
-        
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('successToast');
-            const messageElement = document.getElementById('toastMessage');
-            messageElement.textContent = message;
-            
-            // Set color based on type
-            if (type === 'error') {
-                toast.style.background = '#dc3545';
-            } else {
-                toast.style.background = '#28a745';
-            }
-            
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-        
-        // PDF Export functionality
-        function exportToPDF() {
-            // Minimize matches section before export
-            if (!matchesMinimized) {
-                toggleMatches();
-            }
-            
-            // Use the browser's print functionality
-            window.print();
-        }
-        
-        // Validate that allocations total 100%
-        function validateAllocations() {
-            const growthText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
-            const defensiveText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
-            
-            const growth = parseFloat(growthText) || 0;
-            const defensive = parseFloat(defensiveText) || 0;
-            const total = growth + defensive;
-            
-            const growthInput = document.getElementById('growthAA');
-            const defensiveInput = document.getElementById('defAA');
-            
-            if (total !== 100 && growth > 0 && defensive > 0) {
-                growthInput.style.borderColor = '#dc3545';
-                growthInput.style.backgroundColor = '#f8d7da';
-                growthInput.style.color = '#721c24';
-                defensiveInput.style.borderColor = '#dc3545';
-                defensiveInput.style.backgroundColor = '#f8d7da';
-                defensiveInput.style.color = '#721c24';
-            } else {
-                growthInput.style.borderColor = '#e1e8ed';
-                growthInput.style.backgroundColor = 'white';
-                growthInput.style.color = '#212529';
-                defensiveInput.style.borderColor = '#e1e8ed';
-                defensiveInput.style.backgroundColor = 'white';
-                defensiveInput.style.color = '#212529';
-            }
-        }
-        
-        // Load CSV data
-        function loadCSVData() {
-            // Try multiple possible paths
-            const csvPaths = ['./2025(in).csv', '2025(in).csv', 'PerformanceToolBk/2025(in).csv'];
-            
-            function tryLoadCSV(pathIndex = 0) {
-                if (pathIndex >= csvPaths.length) {
-                    document.getElementById('loadingState').innerHTML = `
-                        <i class="bi bi-exclamation-circle text-danger"></i>
-                        <div class="text-danger">Error loading investment database. Please ensure 2025(in).csv is available.</div>
-                        <div class="text-muted mt-2">Tried paths: ${csvPaths.join(', ')}</div>
-                    `;
-                    return;
-                }
-                
-                fetch(csvPaths[pathIndex])
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`Failed to load CSV from ${csvPaths[pathIndex]}`);
-                        }
-                        return response.text();
-                    })
-                    .then(data => {
-                        console.log(`Successfully loaded CSV from: ${csvPaths[pathIndex]}`);
-                        parseCSV(data);
-                        document.getElementById('loadingState').style.display = 'none';
-                    })
-                    .catch(error => {
-                        console.warn(`Failed to load from ${csvPaths[pathIndex]}:`, error);
-                        tryLoadCSV(pathIndex + 1);
-                    });
-            }
-            
-            tryLoadCSV();
-        }
-        
-        // Parse CSV data with correct column structure
-        function parseCSV(csvText) {
-            Papa.parse(csvText, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    console.log('Papa parse results:', results);
-                    
-                    if (results.data.length === 0) {
-                        console.error('No data found in CSV');
-                        return;
-                    }
-                    
-                    // Check the headers
-                    const headers = Object.keys(results.data[0]);
-                    console.log('CSV Headers:', headers);
-                    
-                    csvData = results.data.map((row, index) => {
-                        const parsePerformance = (value) => {
-                            if (!value || value === '' || value === 'N/A') return null;
-                            const parsed = parseFloat(value);
-                            return isNaN(parsed) ? null : parsed;
-                        };
-                        
-                        const parseDate = (dateStr) => {
-                            if (!dateStr) return null;
-                            
-                            console.log('Parsing date string:', dateStr);
-                            
-                            // Handle Australian date format (DD/MM/YYYY)
-                            const dateString = dateStr.toString().trim();
-                            const parts = dateString.split('/');
-                            
-                            if (parts.length === 3) {
-                                const day = parseInt(parts[0], 10);
-                                const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JavaScript
-                                const year = parseInt(parts[2], 10);
-                                
-                                console.log('Date parts:', { day, month: month + 1, year });
-                                
-                                // Validate the parts
-                                if (day >= 1 && day <= 31 && month >= 0 && month <= 11 && year >= 2020 && year <= 2030) {
-                                    const parsedDate = new Date(year, month, day);
-                                    console.log('Parsed date:', parsedDate);
-                                    return parsedDate;
-                                }
-                            }
-                            
-                            // Fallback to default Date parsing
-                            console.warn('Fallback date parsing for:', dateString);
-                            return new Date(dateString);
-                        };
-                        
-                        // Try different possible header names
-                        const name = row['INVESTMENT NAME'] || row['Investment Name'] || row['Name'] || '';
-                        const oneYear = parsePerformance(row['1 YEAR'] || row['1Y'] || row['1 Year']);
-                        const threeYears = parsePerformance(row['3 YEAR'] || row['3Y'] || row['3 Years']);
-                        const fiveYears = parsePerformance(row['5 YEAR'] || row['5Y'] || row['5 Years']);
-                        const growthAA = parsePerformance(row['GROWTH AA'] || row['Growth AA'] || row['Growth']);
-                        const defAA = parsePerformance(row['DEF AA'] || row['Def AA'] || row['Defensive']);
-                        const date = parseDate(row['DATE'] || row['Date'] || row['date']);
-                        
-                        const investment = {
-                            name: name,
-                            oneYear: oneYear,
-                            threeYears: threeYears,
-                            fiveYears: fiveYears,
-                            growthAA: growthAA,
-                            defAA: defAA,
-                            date: date,
-                            type: 'CSV Database'
-                        };
-                        
-                        // Debug log for first few entries
-                        if (index < 3) {
-                            console.log(`Investment ${index}:`, investment);
-                        }
-                        
-                        return investment;
-                    }).filter(item => {
-                        const isValid = item.name && item.name.trim() !== '' && 
-                                       item.growthAA !== null && item.defAA !== null && 
-                                       item.date !== null && !isNaN(item.date.getTime());
-                        
-                        if (!isValid && item.name) {
-                            console.warn('Filtered out invalid item:', item);
-                        }
-                        
-                        return isValid;
-                    });
-                    
-                    console.log('Final processed data:', csvData.length, 'valid investments');
-                    console.log('Sample valid investment:', csvData[0]);
-                }
-            });
-        }
-        
-        // Form handling
-        document.getElementById('investmentForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            addManualInvestment();
-        });
-        
-        // Add or update manual investment
-        function addManualInvestment() {
-            const name = document.getElementById('investmentName').value.trim();
-            const dateStr = document.getElementById('dateReturns').value;
-            
-            // Parse investment value (remove commas)
-            const valueText = document.getElementById('investmentValue').value.replace(/[^\d]/g, '');
-            const value = parseFloat(valueText);
-            
-            // Parse percentage values (remove % signs)
-            const oneYearText = document.getElementById('oneYear').value.replace(/[^\d.-]/g, '');
-            const threeYearsText = document.getElementById('threeYears').value.replace(/[^\d.-]/g, '');
-            const fiveYearsText = document.getElementById('fiveYears').value.replace(/[^\d.-]/g, '');
-            const growthAAText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
-            const defAAText = document.getElementById('defAA').value.replace(/[^\d.]/g, '');
-            
-            const oneYear = oneYearText ? parseFloat(oneYearText) : null;
-            const threeYears = threeYearsText ? parseFloat(threeYearsText) : null;
-            const fiveYears = fiveYearsText ? parseFloat(fiveYearsText) : null;
-            const growthAA = parseFloat(growthAAText);
-            const defAA = parseFloat(defAAText);
-            
-            // Validation - require name, date, value, and allocations
-            if (!name || !dateStr || isNaN(value) || isNaN(growthAA) || isNaN(defAA)) {
-                showToast('Please fill in investment name, date, value, and allocation percentages');
-                return;
-            }
-            
-            // Check if at least one return value is provided
-            if (oneYear === null && threeYears === null && fiveYears === null) {
-                showToast('Please provide at least one return value (1, 3, or 5 year)');
-                return;
-            }
-            
-            if (Math.abs((growthAA + defAA) - 100) > 0.01) {
-                showToast('Growth and Defensive allocations must total 100%', 'error');
-                return;
-            }
-            
-            const investment = {
-                name: name,
-                date: new Date(dateStr),
-                value: value,
-                oneYear: oneYear,
-                threeYears: threeYears,
-                fiveYears: fiveYears,
-                growthAA: growthAA,
-                defAA: defAA,
-                type: 'Manual Entry',
-                id: Date.now()
-            };
-            
-            // Enforce single manual investment - remove any existing manual investments
-            investments = investments.filter(inv => inv.type !== 'Manual Entry');
-            
-            // Add the new manual investment
-            investments.push(investment);
-            console.log('Added/Updated manual investment:', investment);
-            showToast('Investment updated successfully!');
-            
-            updateComparison();
-            findMatchesForAllManualInvestments();
-            updateAnalysisButton();
-            updateFormButton();
-            
-            // Keep form data persistent - don't reset
-        }
-        
-        // Update the form button text based on whether we have a manual investment
-        function updateFormButton() {
-            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
-            const hasManualInvestment = investments.some(inv => inv.type === 'Manual Entry');
-            
-            if (hasManualInvestment) {
-                submitBtn.innerHTML = '<i class="bi bi-pencil-square"></i> Update Investment & Find Matches';
-            } else {
-                submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
-            }
-        }
-        
-        // Update analysis button state
-        function updateAnalysisButton() {
-            const analysisBtn = document.getElementById('generateAnalysisBtn');
-            const analysisContent = document.getElementById('findexAnalysisContent');
-            
-            // Enable only if exactly 2 investments: 1 manual + 1 recommended
-            const manualCount = investments.filter(inv => inv.type === 'Manual Entry').length;
-            const csvCount = investments.filter(inv => inv.type === 'CSV Database').length;
-            
-            if (manualCount === 1 && csvCount === 1) {
-                analysisBtn.disabled = false;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
-            } else {
-                analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>';
-            }
-        }
-        
-        // Find matches for all manual investments (using average)
-        function findMatchesForAllManualInvestments() {
-            const manualInvestments = investments.filter(inv => inv.type === 'Manual Entry');
-            
-            if (manualInvestments.length === 0) {
-                document.getElementById('matchesSection').style.display = 'none';
-                return;
-            }
-            
-            // Calculate average profile for all manual investments
-            const avgProfile = {
-                growthAA: manualInvestments.reduce((sum, inv) => sum + inv.growthAA, 0) / manualInvestments.length,
-                defAA: manualInvestments.reduce((sum, inv) => sum + inv.defAA, 0) / manualInvestments.length,
-                date: new Date(manualInvestments.reduce((sum, inv) => sum + inv.date.getTime(), 0) / manualInvestments.length)
-            };
-            
-            console.log('Average profile for matching:', avgProfile);
-            
-            findMatches(avgProfile);
-        }
-        
-        // Find matches based on allocation and date
-        function findMatches(investment) {
-            console.log('Looking for matches for:', investment);
-            console.log('Available CSV data count:', csvData.length);
-            
-            const matches = csvData.filter(csvItem => {
-                if (!csvItem.growthAA || !csvItem.defAA || !csvItem.date) {
-                    return false;
-                }
-                
-                // Check allocation variance (within 10%)
-                const growthDiff = Math.abs(csvItem.growthAA - investment.growthAA);
-                const defDiff = Math.abs(csvItem.defAA - investment.defAA);
-                
-                return growthDiff <= 10 && defDiff <= 10;
-            });
-            
-            console.log('Found', matches.length, 'initial matches');
-            
-            // Normalize investment names to handle missing brackets and variations
-            const normalizeInvestmentName = (name) => {
-                return name.trim()
-                    .replace(/\s*\([^)]*\)?\s*$/, '') // Remove trailing parentheses (complete or incomplete)
-                    .replace(/\s+/g, ' ') // Normalize whitespace
-                    .toLowerCase();
-            };
-            
-            // Group by normalized investment name and keep only the closest date for each
-            const uniqueMatches = {};
-            matches.forEach(match => {
-                const normalizedName = normalizeInvestmentName(match.name);
-                const dateDiff = Math.abs(match.date.getTime() - investment.date.getTime());
-                
-                if (!uniqueMatches[normalizedName] || dateDiff < uniqueMatches[normalizedName].dateDiff) {
-                    uniqueMatches[normalizedName] = {
-                        ...match,
-                        dateDiff: dateDiff,
-                        normalizedName: normalizedName
-                    };
-                }
-            });
-            
-            // Convert back to array and sort by date proximity
-            const filteredMatches = Object.values(uniqueMatches).map(match => {
-                // Remove the dateDiff and normalizedName properties we added for comparison
-                const { dateDiff, normalizedName, ...cleanMatch } = match;
-                return cleanMatch;
-            });
-            
-            filteredMatches.sort((a, b) => {
-                const diffA = Math.abs(a.date.getTime() - investment.date.getTime());
-                const diffB = Math.abs(b.date.getTime() - investment.date.getTime());
-                return diffA - diffB;
-            });
-            
-            console.log('Filtered to', filteredMatches.length, 'unique matches (normalized names)');
-            
-            displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
-        }
-        
-        // Global function to add CSV match
-        window.addCSVMatch = function(matchIndex) {
-            console.log('=== ADD CSV MATCH CALLED ===');
-            console.log('Match index:', matchIndex);
-            console.log('Current matches:', currentMatches);
-            
-            if (!currentMatches || matchIndex < 0 || matchIndex >= currentMatches.length) {
-                console.error('Invalid match index');
-                return;
-            }
-            
-            const match = currentMatches[matchIndex];
-            console.log('Adding match:', match);
-            
-            // Check if already added
-            const exists = investments.some(inv => 
-                inv.name === match.name && 
-                inv.date.getTime() === match.date.getTime() && 
-                inv.type === 'CSV Database'
-            );
-            
-            if (exists) {
-                showToast('This investment has already been added!');
-                return;
-            }
-            
-            // Add to investments
-            const newInvestment = {
-                ...match,
-                type: 'CSV Database',
-                id: Date.now() + Math.random()
-            };
-            
-            investments.push(newInvestment);
-            console.log('Investment added! Total investments:', investments.length);
-            
-            // Update the UI
-            updateComparison();
-            updateAnalysisButton();
-            
-            // Update button state
-            const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
-            if (button) {
-                button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
-                button.className = 'btn btn-secondary btn-sm';
-                button.disabled = true;
-            }
-            
-            showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
-        };
-        
-        // Display matches exactly like image 2 - single row format
-        function displayMatches(matches, investment) {
-            console.log('Displaying matches:', matches.length);
-            currentMatches = matches;
-            
-            const matchesSection = document.getElementById('matchesSection');
-            const matchesList = document.getElementById('matchesList');
-            
-            if (matches.length === 0) {
-                matchesList.innerHTML = '<p class="text-muted">No matches found within the specified criteria.</p>';
-                matchesSection.style.display = 'block';
-                return;
-            }
-            
-            // Filter matches to only show recent dates (within 6 months of user's date)
-            const userDate = investment.date.getTime();
-            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-            
-            const recentMatches = matches.filter(match => {
-                const dateDiff = Math.abs(match.date.getTime() - userDate);
-                return dateDiff <= sixMonthsMs;
-            });
-            
-            const displayMatches = recentMatches.slice(0, 8);
-            
-            if (displayMatches.length === 0) {
-                matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
-                matchesSection.style.display = 'block';
-                return;
-            }
-            
-            // Update currentMatches to only include displayed matches
-            currentMatches = displayMatches;
-            
-            // Use original card display
-            let html = '';
-            
-            displayMatches.forEach((match, index) => {
-                // Check if already added
-                const alreadyAdded = investments.some(inv => 
-                    inv.name === match.name && 
-                    inv.date.getTime() === match.date.getTime() && 
-                    inv.type === 'CSV Database'
-                );
-                
-                // Format name based on mode
-                const displayName = formatInvestmentName(match.name);
-                
-                html += `
-                    <div class="match-card">
-                        <div class="match-header">
-                            <h5 class="match-title">${displayName}</h5>
-                            <button 
-                                class="btn btn-success btn-sm" 
-                                onclick="addCSVMatch(${index})"
-                                ${alreadyAdded ? 'disabled' : ''}>
-                                <i class="bi bi-${alreadyAdded ? 'check-circle' : 'plus-circle'}"></i> ${alreadyAdded ? 'Added' : 'Add'}
-                            </button>
-                        </div>
-                        
-                        <div class="match-metrics">
-                            <div class="metric-item">
-                                <div class="metric-label">1yr</div>
-                                <div class="metric-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">3yr</div>
-                                <div class="metric-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="metric-item">
-                                <div class="metric-label">5yr</div>
-                                <div class="metric-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="allocation-info">
-                            <span><strong>Growth AA:</strong> ${match.growthAA.toFixed(1)}%</span>
-                            <span><strong>Def AA:</strong> ${match.defAA.toFixed(1)}%</span>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            matchesList.innerHTML = html;
-            matchesSection.style.display = 'block';
-        }
-        
-        // Format investment name based on current mode
-        function formatInvestmentName(name) {
-            if (currentMode === 'client') {
-                // Use the client mode mapping for all CSV names
-                return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
-            } else {
-                // Adviser mode - add Findex before MDA if not already there
-                if (name.toLowerCase().includes('mda') && !name.toLowerCase().includes('findex')) {
-                    return name.replace(/\bMDA\b/gi, 'Findex MDA');
-                }
-                return name;
-            }
-        }
-        
-        // Remove investment from portfolio
-        function removeInvestment(index) {
-            if (confirm('Are you sure you want to remove this investment from the comparison?')) {
-                const removedInvestment = investments[index];
-                investments.splice(index, 1);
-                
-                // If we removed the manual investment, clear the form
-                if (removedInvestment.type === 'Manual Entry') {
-                    document.getElementById('investmentForm').reset();
-                    document.getElementById('dateReturns').valueAsDate = new Date();
-                }
-                
-                updateCompa
+</html>
