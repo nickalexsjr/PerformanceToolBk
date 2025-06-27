@@ -1629,7 +1629,7 @@
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             if (manual.threeYears !== null && recommended.threeYears !== null) {
@@ -1641,29 +1641,22 @@
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
+             // 5 Year Analysis
             if (manual.fiveYears !== null && recommended.fiveYears !== null) {
                 const diff5Y = recommended.fiveYears - manual.fiveYears;
                 const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
                 const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
                 const absDiff5Y = Math.abs(diff5Y);
+                // Compound the difference over 5 years
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher yield of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
-            
-            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
-            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
-            
-            analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
-            
-            return analysis;
-        }
         
         window.addEventListener('resize', function() {
             if (performanceChart) {
