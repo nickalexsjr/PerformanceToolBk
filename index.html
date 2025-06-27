@@ -375,6 +375,44 @@
             text-align: left;
         }
 
+        .match-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
+            text-align: left;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 3px;
+            text-align: left;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: left;
+        }
+
+        .allocation-info {
+            display: flex;
+            justify-content: flex-start;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -1590,7 +1628,7 @@
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
                         <td>${inv.value ? '
-             + inv.value.toLocaleString() : 'N/A'}</td>
+                 + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
