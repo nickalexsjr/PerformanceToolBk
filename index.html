@@ -384,7 +384,7 @@
         .csv-entry {
         }
 
-        /* Fixed match display styles */
+        /* Simple clean matches table */
         .matches-table {
             background: white;
             border-radius: 15px;
@@ -511,30 +511,6 @@
             font-weight: 600;
         }
 
-        .performance-indicator {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 2px;
-        }
-
-        .indicator-outperform {
-            background: #28a745;
-            color: white;
-        }
-
-        .indicator-underperform {
-            background: #dc3545;
-            color: white;
-        }
-
-        .indicator-neutral {
-            background: #6c757d;
-            color: white;
-        }
-
         .findex-highlight {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #dc3545;
@@ -570,14 +546,6 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
-        }
-
-        .allocation-display {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 14px;
         }
 
         .success-toast {
@@ -624,15 +592,6 @@
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
-        .matches-content.minimized {
-            max-height: 300px;
-            overflow: hidden;
-        }
-
-        .matches-content.expanded {
-            max-height: none;
-        }
-
         @media print {
             body {
                 background: white !important;
@@ -658,7 +617,6 @@
                 page-break-before: always;
             }
 
-            /* Print-specific form layout fixes */
             .input-grid {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
@@ -941,7 +899,7 @@
         let investments = [];
         let performanceChart = null;
         let currentMatches = [];
-        let currentMode = 'client'; // client or adviser
+        let currentMode = 'client';
         let matchesMinimized = false;
         
         // Client mode name mapping for all CSV entries
@@ -994,7 +952,7 @@
             });
         }
         
-        // Toggle matches section exactly as requested
+        // Toggle matches section
         function toggleMatches() {
             const content = document.getElementById('matchesList');
             const icon = document.getElementById('toggleIcon');
@@ -1410,8 +1368,6 @@
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
             updateFormButton();
-            
-            // Keep form data persistent - don't reset
         }
         
         // Update the form button text based on whether we have a manual investment
@@ -1525,57 +1481,6 @@
             displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
         
-        // Global function to add CSV match
-        window.addCSVMatch = function(matchIndex) {
-            console.log('=== ADD CSV MATCH CALLED ===');
-            console.log('Match index:', matchIndex);
-            console.log('Current matches:', currentMatches);
-            
-            if (!currentMatches || matchIndex < 0 || matchIndex >= currentMatches.length) {
-                console.error('Invalid match index');
-                return;
-            }
-            
-            const match = currentMatches[matchIndex];
-            console.log('Adding match:', match);
-            
-            // Check if already added
-            const exists = investments.some(inv => 
-                inv.name === match.name && 
-                inv.date.getTime() === match.date.getTime() && 
-                inv.type === 'CSV Database'
-            );
-            
-            if (exists) {
-                showToast('This investment has already been added!');
-                return;
-            }
-            
-            // Add to investments
-            const newInvestment = {
-                ...match,
-                type: 'CSV Database',
-                id: Date.now() + Math.random()
-            };
-            
-            investments.push(newInvestment);
-            console.log('Investment added! Total investments:', investments.length);
-            
-            // Update the UI
-            updateComparison();
-            updateAnalysisButton();
-            
-            // Update button state
-            const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
-            if (button) {
-                button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
-                button.className = 'match-add-btn';
-                button.disabled = true;
-            }
-            
-            showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
-        };
-        
         // Display matches in the new clean table format
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
@@ -1659,6 +1564,56 @@
             
             matchesList.innerHTML = html;
             matchesSection.style.display = 'block';
+        }
+        
+        // Add CSV match function
+        function addCSVMatch(matchIndex) {
+            console.log('=== ADD CSV MATCH CALLED ===');
+            console.log('Match index:', matchIndex);
+            console.log('Current matches:', currentMatches);
+            
+            if (!currentMatches || matchIndex < 0 || matchIndex >= currentMatches.length) {
+                console.error('Invalid match index');
+                return;
+            }
+            
+            const match = currentMatches[matchIndex];
+            console.log('Adding match:', match);
+            
+            // Check if already added
+            const exists = investments.some(inv => 
+                inv.name === match.name && 
+                inv.date.getTime() === match.date.getTime() && 
+                inv.type === 'CSV Database'
+            );
+            
+            if (exists) {
+                showToast('This investment has already been added!');
+                return;
+            }
+            
+            // Add to investments
+            const newInvestment = {
+                ...match,
+                type: 'CSV Database',
+                id: Date.now() + Math.random()
+            };
+            
+            investments.push(newInvestment);
+            console.log('Investment added! Total investments:', investments.length);
+            
+            // Update the UI
+            updateComparison();
+            updateAnalysisButton();
+            
+            // Update button state
+            const buttons = document.querySelectorAll('button[onclick="addCSVMatch(' + matchIndex + ')"]');
+            buttons.forEach(button => {
+                button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
+                button.disabled = true;
+            });
+            
+            showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         }
         
         // Format investment name based on current mode
@@ -1960,12 +1915,6 @@
             return analysis;
         }
         
-        // Handle window resize for chart
-        window.addEventListener('resize', function() {
-            if (performanceChart) {
-                performanceChart.resize();
-            }
-        });
     </script>
 </body>
 </html>
