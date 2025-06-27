@@ -1583,14 +1583,14 @@
         
         function generateFindexAnalysis() {
             const manual = investments.find(inv => inv.type === 'Manual Entry');
-            const recommended = investments.find(inv => inv.type === 'CSV Database');
+            const suitable = investments.find(inv => inv.type === 'CSV Database');
             
-            if (!manual || !recommended) {
+            if (!manual || !suitable) {
                 showToast('Analysis requires exactly 1 manual entry and 1 Suitable option investment');
                 return;
             }
             
-            const analysisText = generateAnalysisText(manual, recommended);
+            const analysisText = generateAnalysisText(manual, suitable);
             
             const analysisHTML = `
                 <div class="findex-analysis">
@@ -1613,18 +1613,18 @@
             document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
         }
         
-        function generateAnalysisText(manual, recommended) {
+        function generateAnalysisText(manual, suitable) {
             const investmentValue = manual.value || 100000;
             
             const manualName = formatInvestmentName(manual.name);
-            const recommendedName = formatInvestmentName(recommended.name);
+            const suitableName = formatInvestmentName(suitable.name);
             
             let analysis = '';
             
-            if (manual.oneYear !== null && recommended.oneYear !== null) {
-                const diff1Y = recommended.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
+            if (manual.oneYear !== null && suitable.oneYear !== null) {
+                const diff1Y = suitable.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? suitableName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : suitableName;
                 const absDiff1Y = Math.abs(diff1Y);
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
@@ -1632,10 +1632,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
-            if (manual.threeYears !== null && recommended.threeYears !== null) {
-                const diff3Y = recommended.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
+            if (manual.threeYears !== null && suitable.threeYears !== null) {
+                const diff3Y = suitable.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? suitableName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : suitableName;
                 const absDiff3Y = Math.abs(diff3Y);
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
@@ -1644,10 +1644,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
-                const diff5Y = recommended.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
+            if (manual.fiveYears !== null && suitable.fiveYears !== null) {
+                const diff5Y = suitable.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? suitableName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : suitableName;
                 const absDiff5Y = Math.abs(diff5Y);
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
@@ -1656,11 +1656,11 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $ ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
-            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
+            const growthDiff = Math.abs(manual.growthAA - suitable.growthAA);
+            const higherGrowthInvestment = manual.growthAA > suitable.growthAA ? manualName : suitableName;
             
             analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${suitableName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
