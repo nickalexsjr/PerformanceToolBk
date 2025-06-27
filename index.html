@@ -654,7 +654,7 @@
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
-                <h4 class="mb-0"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
+                <h4 class="mb-0"><i class="bi bi-search"></i> Suitable Matches from Database</h4>
                 <button class="toggle-btn" onclick="toggleMatches()">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
@@ -704,7 +704,7 @@
                 </button>
             </div>
             <div id="findexAnalysisContent">
-                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>
+                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 Suitable option) to enable analysis</p>
             </div>
         </div>
 
@@ -1187,7 +1187,7 @@
                 analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
             } else {
                 analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>';
+                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 Suitable option) to enable analysis</p>';
             }
         }
         
@@ -1586,7 +1586,7 @@
             const recommended = investments.find(inv => inv.type === 'CSV Database');
             
             if (!manual || !recommended) {
-                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
+                showToast('Analysis requires exactly 1 manual entry and 1 Suitable option investment');
                 return;
             }
             
@@ -1596,7 +1596,7 @@
                 <div class="findex-analysis">
                     <div class="analysis-header">
                         <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and recommended option</small>
+                        <small>Comparative analysis between your current investment and suitable investment option</small>
                     </div>
                     
                     <div class="analysis-section">
@@ -1653,7 +1653,7 @@
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $ ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
