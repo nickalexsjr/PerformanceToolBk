@@ -384,86 +384,74 @@
         .csv-entry {
         }
 
-        /* Simple clean matches table */
-        .matches-table {
+        /* Clean matches card styling like original */
+        .match-card {
             background: white;
-            border-radius: 15px;
-            overflow: hidden;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border: 1px solid #e9ecef;
-        }
-
-        .matches-table-header {
-            background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
-            color: white;
-            padding: 15px;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-            gap: 15px;
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .matches-table-row {
-            padding: 15px;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-            gap: 15px;
-            align-items: center;
-            border-bottom: 1px solid #f0f0f0;
             transition: all 0.3s ease;
-            background: white;
         }
 
-        .matches-table-row:hover {
-            background: #f8f9fa;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        .match-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
-        .matches-table-row:last-child {
-            border-bottom: none;
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
 
-        .match-name {
+        .match-title {
+            font-size: 18px;
             font-weight: 700;
             color: #2c3e50;
-            font-size: 14px;
+            margin: 0;
         }
 
-        .match-value {
+        .match-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-item {
             text-align: center;
-            font-weight: 600;
-            color: #495057;
-            font-size: 14px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
         }
 
-        .match-add-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+        .metric-label {
             font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .metric-value {
+            font-size: 16px;
             font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: #2c3e50;
         }
 
-        .match-add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        .allocation-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #6c757d;
         }
 
-        .match-add-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        .match-actions {
+            display: flex;
+            justify-content: flex-end;
         }
 
         .chart-container {
@@ -681,15 +669,9 @@
                 justify-content: center;
             }
 
-            .matches-table-header,
-            .matches-table-row {
+            .match-metrics {
                 grid-template-columns: 1fr;
                 gap: 10px;
-                text-align: center;
-            }
-
-            .match-name {
-                text-align: center;
             }
         }
     </style>
@@ -1481,93 +1463,8 @@
             displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
         
-        // Display matches in the new clean table format
-        function displayMatches(matches, investment) {
-            console.log('Displaying matches:', matches.length);
-            currentMatches = matches;
-            
-            const matchesSection = document.getElementById('matchesSection');
-            const matchesList = document.getElementById('matchesList');
-            
-            if (matches.length === 0) {
-                matchesList.innerHTML = '<p class="text-muted">No matches found within the specified criteria.</p>';
-                matchesSection.style.display = 'block';
-                return;
-            }
-            
-            // Filter matches to only show recent dates (within 6 months of user's date)
-            const userDate = investment.date.getTime();
-            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
-            
-            const recentMatches = matches.filter(match => {
-                const dateDiff = Math.abs(match.date.getTime() - userDate);
-                return dateDiff <= sixMonthsMs;
-            });
-            
-            const displayMatches = recentMatches.slice(0, 8);
-            
-            if (displayMatches.length === 0) {
-                matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
-                matchesSection.style.display = 'block';
-                return;
-            }
-            
-            // Update currentMatches to only include displayed matches
-            currentMatches = displayMatches;
-            
-            // Create the clean table layout
-            let html = `
-                <div class="matches-table">
-                    <div class="matches-table-header">
-                        <div>Investment Name</div>
-                        <div>1yr</div>
-                        <div>3yr</div>
-                        <div>5yr</div>
-                        <div>Growth AA</div>
-                        <div>Def AA</div>
-                        <div>Actions</div>
-                    </div>
-            `;
-            
-            displayMatches.forEach((match, index) => {
-                // Check if already added
-                const alreadyAdded = investments.some(inv => 
-                    inv.name === match.name && 
-                    inv.date.getTime() === match.date.getTime() && 
-                    inv.type === 'CSV Database'
-                );
-                
-                // Format name based on mode
-                const displayName = formatInvestmentName(match.name);
-                
-                html += `
-                    <div class="matches-table-row">
-                        <div class="match-name">${displayName}</div>
-                        <div class="match-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
-                        <div class="match-value">${match.growthAA.toFixed(1)}%</div>
-                        <div class="match-value">${match.defAA.toFixed(1)}%</div>
-                        <div class="match-value">
-                            <button 
-                                class="match-add-btn" 
-                                onclick="addCSVMatch(${index})"
-                                ${alreadyAdded ? 'disabled' : ''}>
-                                ${alreadyAdded ? 'Added' : 'Add'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            
-            matchesList.innerHTML = html;
-            matchesSection.style.display = 'block';
-        }
-        
-        // Add CSV match function
-        function addCSVMatch(matchIndex) {
+        // Global function to add CSV match
+        window.addCSVMatch = function(matchIndex) {
             console.log('=== ADD CSV MATCH CALLED ===');
             console.log('Match index:', matchIndex);
             console.log('Current matches:', currentMatches);
@@ -1607,13 +1504,101 @@
             updateAnalysisButton();
             
             // Update button state
-            const buttons = document.querySelectorAll('button[onclick="addCSVMatch(' + matchIndex + ')"]');
-            buttons.forEach(button => {
+            const button = document.querySelector(`button[onclick="addCSVMatch(${matchIndex})"]`);
+            if (button) {
                 button.innerHTML = '<i class="bi bi-check-circle"></i> Added';
+                button.className = 'btn btn-secondary btn-sm';
                 button.disabled = true;
-            });
+            }
             
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
+        };
+        
+        // Display matches exactly like image 2 - single row format
+        function displayMatches(matches, investment) {
+            console.log('Displaying matches:', matches.length);
+            currentMatches = matches;
+            
+            const matchesSection = document.getElementById('matchesSection');
+            const matchesList = document.getElementById('matchesList');
+            
+            if (matches.length === 0) {
+                matchesList.innerHTML = '<p class="text-muted">No matches found within the specified criteria.</p>';
+                matchesSection.style.display = 'block';
+                return;
+            }
+            
+            // Filter matches to only show recent dates (within 6 months of user's date)
+            const userDate = investment.date.getTime();
+            const sixMonthsMs = 6 * 30 * 24 * 60 * 60 * 1000;
+            
+            const recentMatches = matches.filter(match => {
+                const dateDiff = Math.abs(match.date.getTime() - userDate);
+                return dateDiff <= sixMonthsMs;
+            });
+            
+            const displayMatches = recentMatches.slice(0, 8);
+            
+            if (displayMatches.length === 0) {
+                matchesList.innerHTML = '<p class="text-muted">No recent matches found within 6 months of your selected date.</p>';
+                matchesSection.style.display = 'block';
+                return;
+            }
+            
+            // Update currentMatches to only include displayed matches
+            currentMatches = displayMatches;
+            
+            // Create the original card layout for each match
+            let html = '';
+            
+            displayMatches.forEach((match, index) => {
+                // Check if already added
+                const alreadyAdded = investments.some(inv => 
+                    inv.name === match.name && 
+                    inv.date.getTime() === match.date.getTime() && 
+                    inv.type === 'CSV Database'
+                );
+                
+                // Format name based on mode
+                const displayName = formatInvestmentName(match.name);
+                
+                html += `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <h5 class="match-title">${displayName}</h5>
+                            <button 
+                                class="btn btn-success btn-sm" 
+                                onclick="addCSVMatch(${index})"
+                                ${alreadyAdded ? 'disabled' : ''}>
+                                <i class="bi bi-${alreadyAdded ? 'check-circle' : 'plus-circle'}"></i> ${alreadyAdded ? 'Added' : 'Add'}
+                            </button>
+                        </div>
+                        
+                        <div class="match-metrics">
+                            <div class="metric-item">
+                                <div class="metric-label">1yr</div>
+                                <div class="metric-value">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">3yr</div>
+                                <div class="metric-value">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">5yr</div>
+                                <div class="metric-value">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="allocation-info">
+                            <span><strong>Growth AA:</strong> ${match.growthAA.toFixed(1)}%</span>
+                            <span><strong>Def AA:</strong> ${match.defAA.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            matchesList.innerHTML = html;
+            matchesSection.style.display = 'block';
         }
         
         // Format investment name based on current mode
@@ -1915,6 +1900,12 @@
             return analysis;
         }
         
+        // Handle window resize for chart
+        window.addEventListener('resize', function() {
+            if (performanceChart) {
+                performanceChart.resize();
+            }
+        });
     </script>
 </body>
 </html>
