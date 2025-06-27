@@ -654,7 +654,7 @@
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
-                <h4 class="mb-0"><i class="bi bi-search"></i> similiar Matches from Database</h4>
+                <h4 class="mb-0"><i class="bi bi-search"></i> Similiar Matches from Database</h4>
                 <button class="toggle-btn" onclick="toggleMatches()">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
@@ -1596,7 +1596,7 @@
                 <div class="findex-analysis">
                     <div class="analysis-header">
                         <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and similiar investment option</small>
+                        <small>Comparative analysis between your current investment and a similiar investment option</small>
                     </div>
                     
                     <div class="analysis-section">
@@ -1629,7 +1629,7 @@
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
                 analysis += `1 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
             if (manual.threeYears !== null && similiar.threeYears !== null) {
@@ -1641,7 +1641,7 @@
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
                 
                 analysis += `3 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
             if (manual.fiveYears !== null && similiar.fiveYears !== null) {
@@ -1653,7 +1653,7 @@
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
                 analysis += `5 YEAR PERFORMANCE:\n`;
-                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $ ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
             const growthDiff = Math.abs(manual.growthAA - similiar.growthAA);
