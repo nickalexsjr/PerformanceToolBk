@@ -131,13 +131,22 @@
             background: #0056b3;
         }
 
-        .btn-export {
+        .btn-delete {
             background: #dc3545;
             color: white;
         }
 
-        .btn-export:hover {
+        .btn-delete:hover {
             background: #c82333;
+        }
+
+        .btn-export {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #5a2d91;
         }
 
         .glass-card {
@@ -565,6 +574,9 @@
                     <button class="btn-load" onclick="toggleLoadSection()">
                         <i class="bi bi-folder-open"></i> Load
                     </button>
+                    <button class="btn-delete" onclick="deleteSavedData()" style="display: none;">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
                     <button class="btn-export" onclick="exportToPDF()">
                         <i class="bi bi-file-pdf"></i> Export PDF
                     </button>
@@ -654,7 +666,7 @@
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
-                <h4 class="mb-0"><i class="bi bi-search"></i> Recommended Matches from Database</h4>
+                <h4 class="mb-0"><i class="bi bi-search"></i> Matches from Database</h4>
                 <button class="toggle-btn" onclick="toggleMatches()">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
@@ -704,7 +716,7 @@
                 </button>
             </div>
             <div id="findexAnalysisContent">
-                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>
+                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 match) to enable analysis</p>
             </div>
         </div>
 
@@ -841,22 +853,47 @@
         function toggleLoadSection() {
             const select = document.getElementById('savedClients');
             const input = document.getElementById('clientName');
+            const deleteBtn = document.getElementById('savedClients').nextElementSibling.nextElementSibling.nextElementSibling;
             
             if (select.style.display === 'none') {
                 loadSavedClientsList();
                 select.style.display = 'block';
                 input.style.display = 'none';
+                deleteBtn.style.display = 'block';
                 select.onchange = function() {
                     if (this.value) {
                         loadData(this.value);
                         this.style.display = 'none';
                         input.style.display = 'block';
                         input.value = this.value;
+                        deleteBtn.style.display = 'none';
                     }
                 };
             } else {
                 select.style.display = 'none';
                 input.style.display = 'block';
+                deleteBtn.style.display = 'none';
+            }
+        }
+        
+        function deleteSavedData() {
+            const select = document.getElementById('savedClients');
+            const selectedClient = select.value;
+            
+            if (!selectedClient) {
+                showToast('Please select a client to delete');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete all saved data for "${selectedClient}"? This action cannot be undone.`)) {
+                try {
+                    localStorage.removeItem('investmentToolData_' + selectedClient);
+                    showToast(`Data for "${selectedClient}" has been deleted`);
+                    loadSavedClientsList();
+                    select.value = '';
+                } catch (e) {
+                    showToast('Error deleting data');
+                }
             }
         }
         
@@ -943,10 +980,134 @@
         }
         
         function exportToPDF() {
-            if (!matchesMinimized) {
-                toggleMatches();
+            if (investments.length === 0) {
+                showToast('No data to export. Please add investments first.');
+                return;
             }
-            window.print();
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const clientName = document.getElementById('clientName').value.trim();
+            let yPosition = 30;
+            
+            // Page 1: Header and Investment Summary
+            doc.setFontSize(20);
+            doc.text('Findex Investment Performance Tool', 20, yPosition);
+            yPosition += 20;
+            
+            if (clientName) {
+                doc.setFontSize(14);
+                doc.text('Client: ' + clientName, 20, yPosition);
+                yPosition += 15;
+            }
+            
+            doc.setFontSize(12);
+            doc.text('Report Date: ' + new Date().toLocaleDateString(), 20, yPosition);
+            yPosition += 25;
+            
+            // Investment Summary Section
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('Investment Summary', 20, yPosition);
+            yPosition += 20;
+            
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            
+            investments.forEach((inv, index) => {
+                const displayName = formatInvestmentName(inv.name);
+                
+                // Check if we need a new page
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                
+                doc.setFont(undefined, 'bold');
+                doc.text(`${index + 1}. ${displayName}`, 20, yPosition);
+                yPosition += 10;
+                
+                doc.setFont(undefined, 'normal');
+                doc.text(`   Date: ${inv.date.toLocaleDateString()}`, 25, yPosition);
+                yPosition += 8;
+                
+                if (inv.value) {
+                    doc.text(`   Value: $${inv.value.toLocaleString()}`, 25, yPosition);
+                    yPosition += 8;
+                }
+                
+                doc.text(`   1Y: ${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'} | 3Y: ${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'} | 5Y: ${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}`, 25, yPosition);
+                yPosition += 8;
+                
+                doc.text(`   Allocation: ${inv.growthAA.toFixed(1)}% Growth, ${inv.defAA.toFixed(1)}% Defensive`, 25, yPosition);
+                yPosition += 15;
+            });
+            
+            // Page 2: Performance Analysis (if available)
+            if (investments.length === 2) {
+                doc.addPage();
+                yPosition = 30;
+                
+                doc.setFontSize(16);
+                doc.setFont(undefined, 'bold');
+                doc.text('Performance Analysis', 20, yPosition);
+                yPosition += 20;
+                
+                const manual = investments.find(inv => inv.type === 'Manual Entry');
+                const match = investments.find(inv => inv.type === 'CSV Database');
+                
+                if (manual && match) {
+                    const analysis = generateAnalysisText(manual, match);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    const lines = doc.splitTextToSize(analysis, 170);
+                    doc.text(lines, 20, yPosition);
+                }
+            }
+            
+            // Page 3: Disclaimers
+            doc.addPage();
+            yPosition = 30;
+            
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('Important Disclaimers & Assumptions', 20, yPosition);
+            yPosition += 20;
+            
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const disclaimerText = [
+                'Data Sources: This tool uses historical performance data and asset allocation information. Past performance is not indicative of future results.',
+                '',
+                'Matching Logic: Investments are matched based on Growth/Defensive allocation within ±10% variance and closest available date proximity.',
+                '',
+                'Investment Advice: This tool is for comparison purposes only and does not constitute financial advice. Please consult with a qualified financial advisor before making investment decisions.',
+                '',
+                'Risk Considerations: All investments carry risk, including potential loss of principal. Consider your risk tolerance and investment objectives before investing.',
+                '',
+                'Analysis Estimates: Dollar value estimates in the performance analysis are calculations based on provided investment values and performance percentages. These are estimates for comparison purposes only.'
+            ];
+            
+            disclaimerText.forEach(line => {
+                if (yPosition > 260) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                if (line === '') {
+                    yPosition += 5;
+                } else {
+                    const wrappedLines = doc.splitTextToSize(line, 170);
+                    doc.text(wrappedLines, 20, yPosition);
+                    yPosition += wrappedLines.length * 5 + 5;
+                }
+            });
+            
+            // Save the PDF
+            const filename = clientName ? `${clientName}_Investment_Report.pdf` : 'Investment_Report.pdf';
+            doc.save(filename);
+            showToast('PDF exported successfully');
         }
         
         function validateAllocations() {
@@ -1187,7 +1348,7 @@
                 analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
             } else {
                 analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 recommended) to enable analysis</p>';
+                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 match) to enable analysis</p>';
             }
         }
         
@@ -1481,7 +1642,7 @@
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
@@ -1583,20 +1744,20 @@
         
         function generateFindexAnalysis() {
             const manual = investments.find(inv => inv.type === 'Manual Entry');
-            const recommended = investments.find(inv => inv.type === 'CSV Database');
+            const match = investments.find(inv => inv.type === 'CSV Database');
             
-            if (!manual || !recommended) {
-                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
+            if (!manual || !match) {
+                showToast('Analysis requires exactly 1 manual entry and 1 match investment');
                 return;
             }
             
-            const analysisText = generateAnalysisText(manual, recommended);
+            const analysisText = generateAnalysisText(manual, match);
             
             const analysisHTML = `
                 <div class="findex-analysis">
                     <div class="analysis-header">
                         <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and recommended option</small>
+                        <small>Comparative analysis between your current investment and match option</small>
                     </div>
                     
                     <div class="analysis-section">
@@ -1613,18 +1774,18 @@
             document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
         }
         
-        function generateAnalysisText(manual, recommended) {
+        function generateAnalysisText(manual, match) {
             const investmentValue = manual.value || 100000;
             
             const manualName = formatInvestmentName(manual.name);
-            const recommendedName = formatInvestmentName(recommended.name);
+            const matchName = formatInvestmentName(match.name);
             
             let analysis = '';
             
-            if (manual.oneYear !== null && recommended.oneYear !== null) {
-                const diff1Y = recommended.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
+            if (manual.oneYear !== null && match.oneYear !== null) {
+                const diff1Y = match.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? matchName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : matchName;
                 const absDiff1Y = Math.abs(diff1Y);
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
@@ -1632,10 +1793,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
-            if (manual.threeYears !== null && recommended.threeYears !== null) {
-                const diff3Y = recommended.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
+            if (manual.threeYears !== null && match.threeYears !== null) {
+                const diff3Y = match.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? matchName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : matchName;
                 const absDiff3Y = Math.abs(diff3Y);
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
@@ -1644,10 +1805,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
-                const diff5Y = recommended.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
-                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
+            if (manual.fiveYears !== null && match.fiveYears !== null) {
+                const diff5Y = match.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? matchName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : matchName;
                 const absDiff5Y = Math.abs(diff5Y);
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
@@ -1656,11 +1817,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
-            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
+            const growthDiff = Math.abs(manual.growthAA - match.growthAA);
+            const higherGrowthInvestment = manual.growthAA > match.growthAA ? manualName : matchName;
             
-            analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${matchName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
