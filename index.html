@@ -654,7 +654,7 @@
         <!-- CSV Matches Section -->
         <div class="glass-card" id="matchesSection" style="display: none;">
             <div class="matches-toggle">
-                <h4 class="mb-0"><i class="bi bi-search"></i> Suitable Matches from Database</h4>
+                <h4 class="mb-0"><i class="bi bi-search"></i> similiar Matches from Database</h4>
                 <button class="toggle-btn" onclick="toggleMatches()">
                     <i class="bi bi-arrows-collapse" id="toggleIcon"></i> <span id="toggleText">Minimize</span>
                 </button>
@@ -704,7 +704,7 @@
                 </button>
             </div>
             <div id="findexAnalysisContent">
-                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 Suitable option) to enable analysis</p>
+                <p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 similiar option) to enable analysis</p>
             </div>
         </div>
 
@@ -1187,7 +1187,7 @@
                 analysisContent.innerHTML = '<p class="text-muted text-center">Click "Generate Analysis" to view comparative performance analysis</p>';
             } else {
                 analysisBtn.disabled = true;
-                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 Suitable option) to enable analysis</p>';
+                analysisContent.innerHTML = '<p class="text-muted text-center">Add exactly 2 investments (1 manual entry + 1 similiar option) to enable analysis</p>';
             }
         }
         
@@ -1583,20 +1583,20 @@
         
         function generateFindexAnalysis() {
             const manual = investments.find(inv => inv.type === 'Manual Entry');
-            const suitable = investments.find(inv => inv.type === 'CSV Database');
+            const similiar = investments.find(inv => inv.type === 'CSV Database');
             
-            if (!manual || !suitable) {
-                showToast('Analysis requires exactly 1 manual entry and 1 Suitable option investment');
+            if (!manual || !similiar) {
+                showToast('Analysis requires exactly 1 manual entry and 1 similiar option investment');
                 return;
             }
             
-            const analysisText = generateAnalysisText(manual, suitable);
+            const analysisText = generateAnalysisText(manual, similiar);
             
             const analysisHTML = `
                 <div class="findex-analysis">
                     <div class="analysis-header">
                         <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
-                        <small>Comparative analysis between your current investment and suitable investment option</small>
+                        <small>Comparative analysis between your current investment and similiar investment option</small>
                     </div>
                     
                     <div class="analysis-section">
@@ -1613,18 +1613,18 @@
             document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
         }
         
-        function generateAnalysisText(manual, suitable) {
+        function generateAnalysisText(manual, similiar) {
             const investmentValue = manual.value || 100000;
             
             const manualName = formatInvestmentName(manual.name);
-            const suitableName = formatInvestmentName(suitable.name);
+            const similiarName = formatInvestmentName(similiar.name);
             
             let analysis = '';
             
-            if (manual.oneYear !== null && suitable.oneYear !== null) {
-                const diff1Y = suitable.oneYear - manual.oneYear;
-                const higherPerformer = diff1Y > 0 ? suitableName : manualName;
-                const lowerPerformer = diff1Y > 0 ? manualName : suitableName;
+            if (manual.oneYear !== null && similiar.oneYear !== null) {
+                const diff1Y = similiar.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? similiarName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : similiarName;
                 const absDiff1Y = Math.abs(diff1Y);
                 const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
                 
@@ -1632,10 +1632,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
             }
             
-            if (manual.threeYears !== null && suitable.threeYears !== null) {
-                const diff3Y = suitable.threeYears - manual.threeYears;
-                const higherPerformer = diff3Y > 0 ? suitableName : manualName;
-                const lowerPerformer = diff3Y > 0 ? manualName : suitableName;
+            if (manual.threeYears !== null && similiar.threeYears !== null) {
+                const diff3Y = similiar.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? similiarName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : similiarName;
                 const absDiff3Y = Math.abs(diff3Y);
                 const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
                 const dollarDiff3Y = (investmentValue * compoundDiff3Y);
@@ -1644,10 +1644,10 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-            if (manual.fiveYears !== null && suitable.fiveYears !== null) {
-                const diff5Y = suitable.fiveYears - manual.fiveYears;
-                const higherPerformer = diff5Y > 0 ? suitableName : manualName;
-                const lowerPerformer = diff5Y > 0 ? manualName : suitableName;
+            if (manual.fiveYears !== null && similiar.fiveYears !== null) {
+                const diff5Y = similiar.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? similiarName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : similiarName;
                 const absDiff5Y = Math.abs(diff5Y);
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
@@ -1656,11 +1656,11 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated $ ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            const growthDiff = Math.abs(manual.growthAA - suitable.growthAA);
-            const higherGrowthInvestment = manual.growthAA > suitable.growthAA ? manualName : suitableName;
+            const growthDiff = Math.abs(manual.growthAA - similiar.growthAA);
+            const higherGrowthInvestment = manual.growthAA > similiar.growthAA ? manualName : similiarName;
             
             analysis += `PORTFOLIO COMPARISON:\n`;
-            analysis += `When comparing the ${manualName} and ${suitableName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            analysis += `When comparing the ${manualName} and ${similiarName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
             
             return analysis;
         }
