@@ -361,7 +361,7 @@
 
         .match-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
         }
@@ -413,21 +413,6 @@
             justify-content: flex-end;
         }
 
-        .dropdown-item {
-            padding: 12px 20px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .dropdown-item:hover {
-            background: #f8f9fa;
-        }
-
-        .match-info {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -473,30 +458,6 @@
             font-weight: 600;
         }
 
-        .performance-indicator {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            margin: 2px;
-        }
-
-        .indicator-outperform {
-            background: #28a745;
-            color: white;
-        }
-
-        .indicator-underperform {
-            background: #dc3545;
-            color: white;
-        }
-
-        .indicator-neutral {
-            background: #6c757d;
-            color: white;
-        }
-
         .findex-highlight {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #dc3545;
@@ -534,14 +495,6 @@
             to { transform: rotate(360deg); }
         }
 
-        .allocation-display {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
         .success-toast {
             position: fixed;
             top: 20px;
@@ -564,7 +517,7 @@
 
         .matches-toggle {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -963,17 +916,20 @@
             // Format investment value with commas
             const investmentValue = document.getElementById('investmentValue');
             investmentValue.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/[^\d.]/g, '');
+                let value = e.target.value.replace(/[^\d]/g, '');
                 if (value) {
-                    const parts = value.split('.');
-                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                    if (parts.length > 1) {
-                        value = parts[0] + '.' + parts[1].slice(0, 2);
-                    } else {
-                        value = parts[0];
-                    }
+                    // Add commas for thousands
+                    value = parseInt(value).toLocaleString();
                 }
                 e.target.value = value;
+            });
+            
+            investmentValue.addEventListener('blur', function(e) {
+                let value = e.target.value.replace(/[^\d]/g, '');
+                if (value) {
+                    value = parseInt(value).toLocaleString();
+                    e.target.value = value;
+                }
             });
         }
         
@@ -1097,7 +1053,7 @@
                     
                     // Restore mode
                     if (data.mode) {
-                        setMode(data.mode);
+                        currentMode = data.mode;
                         document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
                         document.querySelector(`.mode-btn[onclick="setMode('${data.mode}')"]`).classList.add('active');
                     }
@@ -1301,7 +1257,7 @@
             const dateStr = document.getElementById('dateReturns').value;
             
             // Parse investment value (remove commas and dollar signs)
-            const valueText = document.getElementById('investmentValue').value.replace(/[^\d.]/g, '');
+            const valueText = document.getElementById('investmentValue').value.replace(/[^\d]/g, '');
             const value = parseFloat(valueText);
             
             // Parse percentage values (remove % signs)
@@ -1354,6 +1310,8 @@
             findMatchesForAllManualInvestments();
             updateAnalysisButton();
             showToast('Investment added successfully!');
+            
+            // Don't reset form - keep data persistent
         }
         
         // Edit investment functionality
@@ -1361,79 +1319,47 @@
             const investment = investments[index];
             editingInvestment = index;
             
-            // Show edit inputs in the table row
-            const row = document.querySelector(`#comparisonTableBody tr:nth-child(${index + 1})`);
-            if (!row) return;
+            // Populate form with investment data for editing
+            document.getElementById('investmentName').value = investment.name;
+            document.getElementById('dateReturns').value = investment.date.toISOString().split('T')[0];
+            document.getElementById('investmentValue').value = investment.value ? investment.value.toLocaleString() : '';
+            document.getElementById('oneYear').value = investment.oneYear || '';
+            document.getElementById('threeYears').value = investment.threeYears || '';
+            document.getElementById('fiveYears').value = investment.fiveYears || '';
+            document.getElementById('growthAA').value = investment.growthAA;
+            document.getElementById('defAA').value = investment.defAA;
             
-            row.innerHTML = `
-                <td><input type="text" class="form-control" value="${investment.name}" id="editName"></td>
-                <td><input type="date" class="form-control" value="${investment.date.toISOString().split('T')[0]}" id="editDate"></td>
-                <td><input type="text" class="form-control" value="${investment.value || ''}" id="editValue" placeholder="100,000"></td>
-                <td><input type="text" class="form-control" value="${investment.oneYear || ''}" id="editOneYear"></td>
-                <td><input type="text" class="form-control" value="${investment.threeYears || ''}" id="editThreeYears"></td>
-                <td><input type="text" class="form-control" value="${investment.fiveYears || ''}" id="editFiveYears"></td>
-                <td><input type="text" class="form-control" value="${investment.growthAA}" id="editGrowthAA"></td>
-                <td><input type="text" class="form-control" value="${investment.defAA}" id="editDefAA"></td>
-                <td>
-                    <button class="save-edit" onclick="saveEdit(${index})">
-                        <i class="bi bi-check"></i>
-                    </button>
-                    <button class="cancel-edit" onclick="cancelEdit()">
-                        <i class="bi bi-x"></i>
-                    </button>
-                </td>
-            `;
-        }
-        
-        function saveEdit(index) {
-            const name = document.getElementById('editName').value.trim();
-            const dateStr = document.getElementById('editDate').value;
-            const valueText = document.getElementById('editValue').value.replace(/[^\d.]/g, '');
-            const value = valueText ? parseFloat(valueText) : null;
+            // Change button text to indicate editing mode
+            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
+            submitBtn.innerHTML = '<i class="bi bi-save"></i> Save Changes';
             
-            const oneYearText = document.getElementById('editOneYear').value.replace(/[^\d.-]/g, '');
-            const threeYearsText = document.getElementById('editThreeYears').value.replace(/[^\d.-]/g, '');
-            const fiveYearsText = document.getElementById('editFiveYears').value.replace(/[^\d.-]/g, '');
-            
-            const oneYear = oneYearText ? parseFloat(oneYearText) : null;
-            const threeYears = threeYearsText ? parseFloat(threeYearsText) : null;
-            const fiveYears = fiveYearsText ? parseFloat(fiveYearsText) : null;
-            const growthAA = parseFloat(document.getElementById('editGrowthAA').value);
-            const defAA = parseFloat(document.getElementById('editDefAA').value);
-            
-            // Validation
-            if (!name || !dateStr || isNaN(growthAA) || isNaN(defAA)) {
-                showToast('Please fill in required fields');
-                return;
+            // Add cancel button
+            if (!document.getElementById('cancelEditBtn')) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'btn btn-secondary ms-2';
+                cancelBtn.id = 'cancelEditBtn';
+                cancelBtn.innerHTML = '<i class="bi bi-x"></i> Cancel Edit';
+                cancelBtn.onclick = cancelEdit;
+                submitBtn.parentNode.appendChild(cancelBtn);
             }
             
-            if (Math.abs((growthAA + defAA) - 100) > 0.01) {
-                showToast('Growth and Defensive allocations must total 100%');
-                return;
-            }
-            
-            // Update the investment
-            investments[index] = {
-                ...investments[index],
-                name: name,
-                date: new Date(dateStr),
-                value: value,
-                oneYear: oneYear,
-                threeYears: threeYears,
-                fiveYears: fiveYears,
-                growthAA: growthAA,
-                defAA: defAA
-            };
-            
-            editingInvestment = null;
-            updateComparison();
-            updateAnalysisButton();
-            showToast('Investment updated successfully!');
+            showToast('Editing investment - modify fields and click "Save Changes"');
         }
         
         function cancelEdit() {
             editingInvestment = null;
-            updateComparison();
+            resetForm();
+            
+            // Remove cancel button
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            if (cancelBtn) {
+                cancelBtn.remove();
+            }
+            
+            // Reset submit button
+            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
+            submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
         }
         
         // Update analysis button state
@@ -1535,8 +1461,8 @@
             displayMatches(filteredMatches.slice(0, 8), investment); // Show top 8 unique matches
         }
         
-        // Global function to add CSV match (FIXED VERSION)
-        window.addCSVMatch = function(matchIndex) {
+        // Global function to add CSV match
+        function addCSVMatch(matchIndex) {
             console.log('=== ADD CSV MATCH CALLED ===');
             console.log('Match index:', matchIndex);
             console.log('Current matches:', currentMatches);
@@ -1584,7 +1510,7 @@
             }
             
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
-        };
+        }
         
         // Display matches with new UI design
         function displayMatches(matches, investment) {
@@ -1714,6 +1640,19 @@
             document.getElementById('dateReturns').valueAsDate = new Date();
             document.getElementById('growthAA').style.borderColor = '#e1e8ed';
             document.getElementById('defAA').style.borderColor = '#e1e8ed';
+            
+            // Reset editing state
+            editingInvestment = null;
+            
+            // Remove cancel button if it exists
+            const cancelBtn = document.getElementById('cancelEditBtn');
+            if (cancelBtn) {
+                cancelBtn.remove();
+            }
+            
+            // Reset submit button
+            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
+            submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
         }
         
         // Update comparison table and chart
@@ -1781,7 +1720,7 @@
             updateChart();
         }
         
-        // Update performance chart - grouped bars like the image
+        // Update performance chart - grouped bars
         function updateChart() {
             const canvas = document.getElementById('performanceChart');
             const ctx = canvas.getContext('2d');
