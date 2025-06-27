@@ -1499,7 +1499,7 @@
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
         };
         
-        // Display matches exactly like your image with individual cards
+        // Display matches exactly like image 2 - single row format
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1533,7 +1533,19 @@
             // Update currentMatches to only include displayed matches
             currentMatches = displayMatches;
             
-            let html = '';
+            // Add header row
+            let html = `
+                <div class="matches-header">
+                    <div class="matches-header-item">Investment Name</div>
+                    <div class="matches-header-item">1yr</div>
+                    <div class="matches-header-item">3yr</div>
+                    <div class="matches-header-item">5yr</div>
+                    <div class="matches-header-item">Growth AA</div>
+                    <div class="matches-header-item">Def AA</div>
+                    <div class="matches-header-item">Actions</div>
+                </div>
+            `;
+            
             displayMatches.forEach((match, index) => {
                 // Check if already added
                 const alreadyAdded = investments.some(inv => 
@@ -1548,28 +1560,11 @@
                 html += `
                     <div class="match-container">
                         <div class="match-name-header">${displayName}</div>
-                        <div class="match-values-container">
-                            <div class="match-value-item">
-                                <strong>1 Year</strong>
-                                <div class="match-value-number">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="match-value-item">
-                                <strong>3 Year</strong>
-                                <div class="match-value-number">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="match-value-item">
-                                <strong>5 Year</strong>
-                                <div class="match-value-number">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div class="match-value-item">
-                                <strong>Growth AA</strong>
-                                <div class="match-value-number">${match.growthAA.toFixed(1)}%</div>
-                            </div>
-                            <div class="match-value-item">
-                                <strong>Def AA</strong>
-                                <div class="match-value-number">${match.defAA.toFixed(1)}%</div>
-                            </div>
-                        </div>
+                        <div class="match-value-number">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value-number">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value-number">${match.fiveYears ? match.fiveYears.toFixed(2) + '%' : 'N/A'}</div>
+                        <div class="match-value-number">${match.growthAA.toFixed(1)}%</div>
+                        <div class="match-value-number">${match.defAA.toFixed(1)}%</div>
                         <button 
                             class="match-add-button" 
                             onclick="addCSVMatch(${index})"
