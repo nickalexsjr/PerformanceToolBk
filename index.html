@@ -190,7 +190,7 @@
             background: linear-gradient(135deg, #dc3545 0%, #000000 100%);
             color: white;
             border: none;
-            padding: 10px 25px;
+            padding: 12px 30px;
             border-radius: 50px;
             font-weight: 600;
             transition: all 0.3s ease;
@@ -314,7 +314,7 @@
             border-bottom: 1px solid #f0f0f0;
             text-align: center;
             vertical-align: middle;
-            background: white;
+            background: white; /* Default white background */
         }
 
         .table tbody tr:hover {
@@ -322,7 +322,7 @@
         }
 
         .table tbody tr:hover td {
-            background: #f8f9fa;
+            background: #f8f9fa; /* Maintain hover effect */
         }
 
         .performance-high {
@@ -458,6 +458,30 @@
             font-weight: 600;
         }
 
+        .performance-indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .indicator-outperform {
+            background: #28a745;
+            color: white;
+        }
+
+        .indicator-underperform {
+            background: #dc3545;
+            color: white;
+        }
+
+        .indicator-neutral {
+            background: #6c757d;
+            color: white;
+        }
+
         .findex-highlight {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
             color: #dc3545;
@@ -493,6 +517,14 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        .allocation-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
         }
 
         .success-toast {
@@ -546,45 +578,6 @@
 
         .matches-content.expanded {
             max-height: none;
-        }
-
-        .edit-investment {
-            background: #ffc107;
-            color: #000;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        .edit-investment:hover {
-            background: #e0a800;
-        }
-
-        .save-edit {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-
-        .cancel-edit {
-            background: #6c757d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
         }
 
         @media print {
@@ -871,11 +864,10 @@
         let investments = [];
         let performanceChart = null;
         let currentMatches = [];
-        let currentMode = 'client';
-        let editingInvestment = null;
+        let currentMode = 'client'; // client or adviser
         let matchesMinimized = false;
         
-        // Client mode name mapping
+        // Client mode name mapping for all CSV entries
         const clientModeNames = {
             'MDA Active Growth - Unlisted (No TDs)': 'Findex Growth Portfolio 1',
             'MDA Active Growth Plus - Unlisted (No TDs)': 'Findex Growth Plus Portfolio 1',
@@ -904,29 +896,21 @@
             document.getElementById('growthAA').addEventListener('input', validateAllocations);
             document.getElementById('defAA').addEventListener('input', validateAllocations);
             
-            // Add input formatting
+            // Add input formatting for comma in investment value
             setupInputFormatting();
             
             // Load saved clients list
             loadSavedClientsList();
         });
         
-        // Setup input formatting
+        // Setup input formatting for comma separation
         function setupInputFormatting() {
-            // Format investment value with commas
-            const investmentValue = document.getElementById('investmentValue');
-            investmentValue.addEventListener('input', function(e) {
+            const investmentValueInput = document.getElementById('investmentValue');
+            
+            investmentValueInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/[^\d]/g, '');
                 if (value) {
                     // Add commas for thousands
-                    value = parseInt(value).toLocaleString();
-                }
-                e.target.value = value;
-            });
-            
-            investmentValue.addEventListener('blur', function(e) {
-                let value = e.target.value.replace(/[^\d]/g, '');
-                if (value) {
                     value = parseInt(value).toLocaleString();
                     e.target.value = value;
                 }
@@ -1256,7 +1240,7 @@
             const name = document.getElementById('investmentName').value.trim();
             const dateStr = document.getElementById('dateReturns').value;
             
-            // Parse investment value (remove commas and dollar signs)
+            // Parse investment value (remove commas)
             const valueText = document.getElementById('investmentValue').value.replace(/[^\d]/g, '');
             const value = parseFloat(valueText);
             
@@ -1311,55 +1295,7 @@
             updateAnalysisButton();
             showToast('Investment added successfully!');
             
-            // Don't reset form - keep data persistent
-        }
-        
-        // Edit investment functionality
-        function editInvestment(index) {
-            const investment = investments[index];
-            editingInvestment = index;
-            
-            // Populate form with investment data for editing
-            document.getElementById('investmentName').value = investment.name;
-            document.getElementById('dateReturns').value = investment.date.toISOString().split('T')[0];
-            document.getElementById('investmentValue').value = investment.value ? investment.value.toLocaleString() : '';
-            document.getElementById('oneYear').value = investment.oneYear || '';
-            document.getElementById('threeYears').value = investment.threeYears || '';
-            document.getElementById('fiveYears').value = investment.fiveYears || '';
-            document.getElementById('growthAA').value = investment.growthAA;
-            document.getElementById('defAA').value = investment.defAA;
-            
-            // Change button text to indicate editing mode
-            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
-            submitBtn.innerHTML = '<i class="bi bi-save"></i> Save Changes';
-            
-            // Add cancel button
-            if (!document.getElementById('cancelEditBtn')) {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.type = 'button';
-                cancelBtn.className = 'btn btn-secondary ms-2';
-                cancelBtn.id = 'cancelEditBtn';
-                cancelBtn.innerHTML = '<i class="bi bi-x"></i> Cancel Edit';
-                cancelBtn.onclick = cancelEdit;
-                submitBtn.parentNode.appendChild(cancelBtn);
-            }
-            
-            showToast('Editing investment - modify fields and click "Save Changes"');
-        }
-        
-        function cancelEdit() {
-            editingInvestment = null;
-            resetForm();
-            
-            // Remove cancel button
-            const cancelBtn = document.getElementById('cancelEditBtn');
-            if (cancelBtn) {
-                cancelBtn.remove();
-            }
-            
-            // Reset submit button
-            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
-            submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
+            // Keep form data persistent - don't reset
         }
         
         // Update analysis button state
@@ -1462,7 +1398,7 @@
         }
         
         // Global function to add CSV match
-        function addCSVMatch(matchIndex) {
+        window.addCSVMatch = function(matchIndex) {
             console.log('=== ADD CSV MATCH CALLED ===');
             console.log('Match index:', matchIndex);
             console.log('Current matches:', currentMatches);
@@ -1510,9 +1446,9 @@
             }
             
             showToast(`"${formatInvestmentName(match.name)}" has been added to your comparison!`);
-        }
+        };
         
-        // Display matches with new UI design
+        // Display matches with new card design
         function displayMatches(matches, investment) {
             console.log('Displaying matches:', matches.length);
             currentMatches = matches;
@@ -1607,7 +1543,7 @@
         // Format investment name based on current mode
         function formatInvestmentName(name) {
             if (currentMode === 'client') {
-                // Use the client mode mapping
+                // Use the client mode mapping for all CSV names
                 return clientModeNames[name] || name.replace(/\bMDA\b/gi, '').replace(/\s+/g, ' ').trim();
             } else {
                 // Adviser mode - add Findex before MDA if not already there
@@ -1640,19 +1576,6 @@
             document.getElementById('dateReturns').valueAsDate = new Date();
             document.getElementById('growthAA').style.borderColor = '#e1e8ed';
             document.getElementById('defAA').style.borderColor = '#e1e8ed';
-            
-            // Reset editing state
-            editingInvestment = null;
-            
-            // Remove cancel button if it exists
-            const cancelBtn = document.getElementById('cancelEditBtn');
-            if (cancelBtn) {
-                cancelBtn.remove();
-            }
-            
-            // Reset submit button
-            const submitBtn = document.querySelector('#investmentForm button[type="submit"]');
-            submitBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Investment & Find Matches';
         }
         
         // Update comparison table and chart
@@ -1695,18 +1618,13 @@
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td>${inv.growthAA.toFixed(1)}%</td>
                         <td>${inv.defAA.toFixed(1)}%</td>
                         <td>
-                            ${inv.type === 'Manual Entry' ? `
-                                <button class="edit-investment" onclick="editInvestment(${index})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                            ` : ''}
                             <button class="btn btn-danger btn-sm" onclick="removeInvestment(${index})">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -1737,7 +1655,7 @@
                 const displayName = formatInvestmentName(inv.name);
                 const shortName = displayName.length > 15 ? displayName.substring(0, 15) + '...' : displayName;
                 
-                // Use Findex theme colors
+                // Use Findex theme colors (red and black)
                 const colors = [
                     { bg: 'rgba(220, 53, 69, 0.7)', border: 'rgba(220, 53, 69, 1)' },
                     { bg: 'rgba(0, 0, 0, 0.7)', border: 'rgba(0, 0, 0, 1)' },
@@ -1886,7 +1804,7 @@
                 analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
             }
             
-            // Risk Profile Comparison - Updated format
+            // Portfolio Comparison - Updated format as requested
             const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
             const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
             const higherGrowthPercentage = Math.max(manual.growthAA, recommended.growthAA);
