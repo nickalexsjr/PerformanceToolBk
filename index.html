@@ -140,6 +140,15 @@
             background: #c82333;
         }
 
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -538,6 +547,63 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
+
+        .client-management {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .client-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+        }
+
+        .client-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+
+        .client-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .client-item:hover {
+            background: #f8f9fa;
+        }
+
+        .client-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .client-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .client-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-xs {
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -569,6 +635,19 @@
                         <i class="bi bi-file-pdf"></i> Export PDF
                     </button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Client Management Section -->
+        <div class="client-management" id="clientManagement" style="display: none;">
+            <h5><i class="bi bi-people"></i> Saved Clients</h5>
+            <div class="client-list" id="clientList">
+                <!-- Client list will be populated here -->
+            </div>
+            <div class="mt-3 text-center">
+                <button class="btn btn-secondary" onclick="hideClientManagement()">
+                    <i class="bi bi-x"></i> Close
+                </button>
             </div>
         </div>
         
@@ -841,8 +920,13 @@
         function toggleLoadSection() {
             const select = document.getElementById('savedClients');
             const input = document.getElementById('clientName');
+            const clientManagement = document.getElementById('clientManagement');
             
             if (select.style.display === 'none') {
+                // Show client management section
+                displayClientManagement();
+                clientManagement.style.display = 'block';
+                
                 loadSavedClientsList();
                 select.style.display = 'block';
                 input.style.display = 'none';
@@ -852,11 +936,83 @@
                         this.style.display = 'none';
                         input.style.display = 'block';
                         input.value = this.value;
+                        clientManagement.style.display = 'none';
                     }
                 };
             } else {
                 select.style.display = 'none';
                 input.style.display = 'block';
+                clientManagement.style.display = 'none';
+            }
+        }
+        
+        function displayClientManagement() {
+            const clientList = document.getElementById('clientList');
+            const savedClients = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('investmentToolData_')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        const clientName = key.replace('investmentToolData_', '');
+                        savedClients.push({
+                            name: clientName,
+                            savedDate: data.savedDate ? new Date(data.savedDate) : new Date(),
+                            key: key
+                        });
+                    } catch (e) {
+                        console.warn('Error parsing saved data for:', key);
+                    }
+                }
+            }
+            
+            savedClients.sort((a, b) => b.savedDate - a.savedDate);
+            
+            if (savedClients.length === 0) {
+                clientList.innerHTML = '<p class="text-muted text-center">No saved clients found</p>';
+                return;
+            }
+            
+            let html = '';
+            savedClients.forEach(client => {
+                html += `
+                    <div class="client-item">
+                        <div>
+                            <div class="client-name">${client.name}</div>
+                            <div class="client-date">Saved: ${client.savedDate.toLocaleDateString()}</div>
+                        </div>
+                        <div class="client-actions">
+                            <button class="btn btn-primary btn-xs" onclick="loadData('${client.name}'); hideClientManagement();">
+                                <i class="bi bi-folder-open"></i> Load
+                            </button>
+                            <button class="btn btn-danger btn-xs" onclick="deleteClient('${client.name}')">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            clientList.innerHTML = html;
+        }
+        
+        function hideClientManagement() {
+            document.getElementById('clientManagement').style.display = 'none';
+            document.getElementById('savedClients').style.display = 'none';
+            document.getElementById('clientName').style.display = 'block';
+        }
+        
+        function deleteClient(clientName) {
+            if (confirm(`Are you sure you want to delete the saved data for "${clientName}"? This action cannot be undone.`)) {
+                try {
+                    localStorage.removeItem('investmentToolData_' + clientName);
+                    showToast(`Data for "${clientName}" has been deleted successfully`);
+                    displayClientManagement(); // Refresh the list
+                    loadSavedClientsList(); // Refresh the dropdown
+                } catch (e) {
+                    showToast('Error deleting client data', 'error');
+                }
             }
         }
         
@@ -879,7 +1035,7 @@
                 showToast('Data saved successfully for ' + clientName);
                 loadSavedClientsList();
             } catch (e) {
-                showToast('Error saving data');
+                showToast('Error saving data', 'error');
             }
         }
         
@@ -918,10 +1074,10 @@
                     
                     showToast('Data loaded successfully for ' + clientName);
                 } else {
-                    showToast('No saved data found for ' + clientName);
+                    showToast('No saved data found for ' + clientName, 'error');
                 }
             } catch (e) {
-                showToast('Error loading data');
+                showToast('Error loading data', 'error');
             }
         }
         
@@ -1481,7 +1637,7 @@
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
