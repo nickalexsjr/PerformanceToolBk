@@ -131,15 +131,6 @@
             background: #0056b3;
         }
 
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c82333;
-        }
-
         .btn-export {
             background: #dc3545;
             color: white;
@@ -574,7 +565,7 @@
                     <button class="btn-load" onclick="toggleLoadSection()">
                         <i class="bi bi-folder-open"></i> Load
                     </button>
-                    <button class="btn-delete" id="deleteBtn" onclick="deleteSavedData()" style="display: none;">
+                    <button class="btn-export" id="deleteBtn" onclick="deleteSelectedClient()" style="display: none;">
                         <i class="bi bi-trash"></i> Delete
                     </button>
                     <button class="btn-export" onclick="exportToPDF()">
@@ -876,7 +867,7 @@
             }
         }
         
-        function deleteSavedData() {
+        function deleteSelectedClient() {
             const select = document.getElementById('savedClients');
             const selectedClient = select.value;
             
@@ -1033,7 +1024,7 @@
                 yPosition += 8;
                 
                 if (inv.value) {
-                    doc.text(`   Value: $${inv.value.toLocaleString()}`, 25, yPosition);
+                    doc.text(`   Value: ${inv.value.toLocaleString()}`, 25, yPosition);
                     yPosition += 8;
                 }
                 
@@ -1109,6 +1100,15 @@
             doc.save(filename);
             showToast('PDF exported successfully');
         }
+        
+        window.addEventListener('resize', function() {
+            if (performanceChart) {
+                performanceChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>
         
         function validateAllocations() {
             const growthText = document.getElementById('growthAA').value.replace(/[^\d.]/g, '');
@@ -1636,13 +1636,174 @@
                 };
                 
                 const rowClass = inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry';
+        function updateComparison() {
+            if (investments.length === 0) {
+                document.getElementById('comparisonSection').style.display = 'none';
+                document.getElementById('chartSection').style.display = 'none';
+                document.getElementById('findexAnalysisSection').style.display = 'none';
+                return;
+            }
+            
+            const periods = ['oneYear', 'threeYears', 'fiveYears'];
+            const highlights = {};
+            
+            periods.forEach(period => {
+                const validValues = investments.filter(inv => inv[period] !== null).map(inv => inv[period]);
+                if (validValues.length > 0) {
+                    highlights[period] = {
+                        max: Math.max(...validValues),
+                        min: Math.min(...validValues)
+                    };
+                }
+            });
+            
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = investments.map((inv, index) => {
+                const getHighlightClass = (period, value) => {
+                    if (!highlights[period] || value === null) return '';
+                    if (value === highlights[period].max) return 'performance-high';
+                    if (value === highlights[period].min) return 'performance-low';
+                    return '';
+                };
+                
+                const rowClass = inv.type === 'Manual Entry' ? 'manual-entry' : 'csv-entry';
                 const displayName = formatInvestmentName(inv.name);
                 
                 return `
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? '
+        
+        function generateFindexAnalysis() {
+            const manual = investments.find(inv => inv.type === 'Manual Entry');
+            const recommended = investments.find(inv => inv.type === 'CSV Database');
+            
+            if (!manual || !recommended) {
+                showToast('Analysis requires exactly 1 manual entry and 1 recommended investment');
+                return;
+            }
+            
+            const analysisText = generateAnalysisText(manual, recommended);
+            
+            const analysisHTML = `
+                <div class="findex-analysis">
+                    <div class="analysis-header">
+                        <h5><i class="bi bi-award"></i> Performance Analysis Report</h5>
+                        <small>Comparative analysis between your current investment and option</small>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <h6><i class="bi bi-graph-up"></i> Performance Comparison Summary</h6>
+                        <div style="white-space: pre-line; line-height: 1.6;">${analysisText}</div>
+                        
+                        <div class="findex-highlight">
+                            <i class="bi bi-info-circle"></i> <strong>Note:</strong> Dollar value estimates are based on the investment value provided (${manual.value ? manual.value.toLocaleString() : 'N/A'}) and calculated performance differences. These are estimates for comparison purposes only.
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('findexAnalysisContent').innerHTML = analysisHTML;
+        }
+        
+        function generateAnalysisText(manual, recommended) {
+            const investmentValue = manual.value || 100000;
+            
+            const manualName = formatInvestmentName(manual.name);
+            const recommendedName = formatInvestmentName(recommended.name);
+            
+            let analysis = '';
+            
+            if (manual.oneYear !== null && recommended.oneYear !== null) {
+                const diff1Y = recommended.oneYear - manual.oneYear;
+                const higherPerformer = diff1Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff1Y > 0 ? manualName : recommendedName;
+                const absDiff1Y = Math.abs(diff1Y);
+                const dollarDiff1Y = (investmentValue * absDiff1Y / 100);
+                
+                analysis += `1 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff1Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff1Y).toLocaleString()} over a 1 year period.\n\n`;
+            }
+            
+            if (manual.threeYears !== null && recommended.threeYears !== null) {
+                const diff3Y = recommended.threeYears - manual.threeYears;
+                const higherPerformer = diff3Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff3Y > 0 ? manualName : recommendedName;
+                const absDiff3Y = Math.abs(diff3Y);
+                const compoundDiff3Y = Math.pow(1 + absDiff3Y/100, 3) - 1;
+                const dollarDiff3Y = (investmentValue * compoundDiff3Y);
+                
+                analysis += `3 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
+            }
+            
+            if (manual.fiveYears !== null && recommended.fiveYears !== null) {
+                const diff5Y = recommended.fiveYears - manual.fiveYears;
+                const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
+                const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
+                const absDiff5Y = Math.abs(diff5Y);
+                const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
+                const dollarDiff5Y = (investmentValue * compoundDiff5Y);
+                
+                analysis += `5 YEAR PERFORMANCE:\n`;
+                analysis += `${higherPerformer} has a higher performance of ${absDiff5Y.toFixed(2)}% than ${lowerPerformer}, estimated ${Math.round(dollarDiff5Y).toLocaleString()} over a 5 year period.\n\n`;
+            }
+            
+            const growthDiff = Math.abs(manual.growthAA - recommended.growthAA);
+            const higherGrowthInvestment = manual.growthAA > recommended.growthAA ? manualName : recommendedName;
+            
+            analysis += `When comparing the ${manualName} and ${recommendedName} portfolios, whilst they are similar it is noted that the ${higherGrowthInvestment} has a higher exposure to total growth assets of approximately ${growthDiff.toFixed(1)}%.`;
+            
+            return analysis;
+        }
+        
+        window.addEventListener('resize', function() {
+            if (performanceChart) {
+                performanceChart.resize();
+            }
+        });
+    </script>
+</body>
+</html>
+                
+                return `
+                    <tr class="${rowClass}">
+                        <td><strong>${displayName}</strong></td>
+                        <td>${inv.date.toLocaleDateString('en-AU')}</td>
+                        <td>${inv.value ? '$' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
+                        <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
+                        <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
+                        <td>${inv.growthAA.toFixed(1)}%</td>
+                        <td>${inv.defAA.toFixed(1)}%</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm" onclick="removeInvestment(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            document.getElementById('comparisonSection').style.display = 'block';
+            document.getElementById('findexAnalysisSection').style.display = 'block';
+            updateChart();
+        }
+        
+        function updateChart() {
+            const canvas = document.getElementById('performanceChart');
+            const ctx = canvas.getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+            
+            const labels = ['1 Year', '3 Years', '5 Years'];
+            const datasets = [];
+            
+            investments.forEach((inv, index) => {
+                const displayName = formatInvestmentName(inv.name); + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
