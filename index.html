@@ -1644,13 +1644,11 @@
                 analysis += `${higherPerformer} has a higher yield of ${absDiff3Y.toFixed(2)}% than ${lowerPerformer}, estimated $${Math.round(dollarDiff3Y).toLocaleString()} over a 3 year period.\n\n`;
             }
             
-             // 5 Year Analysis
             if (manual.fiveYears !== null && recommended.fiveYears !== null) {
                 const diff5Y = recommended.fiveYears - manual.fiveYears;
                 const higherPerformer = diff5Y > 0 ? recommendedName : manualName;
                 const lowerPerformer = diff5Y > 0 ? manualName : recommendedName;
                 const absDiff5Y = Math.abs(diff5Y);
-                // Compound the difference over 5 years
                 const compoundDiff5Y = Math.pow(1 + absDiff5Y/100, 5) - 1;
                 const dollarDiff5Y = (investmentValue * compoundDiff5Y);
                 
