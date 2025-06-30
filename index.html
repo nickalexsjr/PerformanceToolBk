@@ -1614,10 +1614,6 @@ function deleteData() {
                         
                         <div style="display: flex; align-items: flex-start; gap: 30px; margin-bottom: 15px;">
                             <div style="text-align: left;">
-                                <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">1yr</div>
-                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
-                            </div>
-                            <div style="text-align: left;">
                                 <div style="font-size: 12px; color: #6c757d; font-weight: 500; margin-bottom: 3px;">3yr</div>
                                 <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.threeYears ? match.threeYears.toFixed(2) + '%' : 'N/A'}</div>
                             </div>
@@ -1731,7 +1727,11 @@ function deleteData() {
                     <tr class="${rowClass}">
                         <td><strong>${displayName}</strong></td>
                         <td>${inv.date.toLocaleDateString('en-AU')}</td>
-                        <td>${inv.value ? ' + inv.value.toLocaleString() : 'N/A'}</td>
+                        <td>${inv.value ? 'd; font-weight: 500; margin-bottom: 3px;">1yr</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2c3e50;">${match.oneYear ? match.oneYear.toFixed(2) + '%' : 'N/A'}</div>
+                            </div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 12px; color: #6c757 + inv.value.toLocaleString() : 'N/A'}</td>
                         <td class="${getHighlightClass('oneYear', inv.oneYear)}">${inv.oneYear ? inv.oneYear.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('threeYears', inv.threeYears)}">${inv.threeYears ? inv.threeYears.toFixed(2) + '%' : 'N/A'}</td>
                         <td class="${getHighlightClass('fiveYears', inv.fiveYears)}">${inv.fiveYears ? inv.fiveYears.toFixed(2) + '%' : 'N/A'}</td>
@@ -1913,6 +1913,10 @@ function deleteData() {
             
             return analysis;
         }
+        
+        window.removeInvestment = removeInvestment;
+        window.resetForm = resetForm;
+        window.generateFindexAnalysis = generateFindexAnalysis;
         
         window.addEventListener('resize', function() {
             if (performanceChart) {
