@@ -36,19 +36,25 @@
     }
     
     .chart-container {
-    height: 250px !important;
+    height: 280px !important;  /* Increased to show x-axis labels */
     padding: 10px !important;
     page-break-inside: avoid;
     margin-bottom: 5px !important;
 }
 
 #performanceChart {
-    max-height: 220px !important;
+    max-height: 240px !important;  /* Increased proportionally */
 }
 
 /* Also add this to ensure the chart div doesn't overflow */
 .chart-container > div {
-    height: 200px !important;
+    height: 220px !important;  /* Increased to show labels */
+}
+
+/* Ensure chart text is visible */
+.chart-container canvas {
+    max-width: 100% !important;
+    height: auto !important;
 }
     
     .glass-card, .comparison-table, .disclaimer {
