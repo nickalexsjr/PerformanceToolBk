@@ -35,20 +35,22 @@
         padding: 5px;
     }
     
-    .chart-container {
-    height: 280px !important;  /* Increased to show x-axis labels */
-    padding: 10px !important;
+   .chart-container {
+    height: 300px !important;  /* Increased to show x-axis labels */
+    padding: 10px 10px 20px 10px !important;  /* Added more bottom padding */
     page-break-inside: avoid;
     margin-bottom: 5px !important;
 }
 
 #performanceChart {
-    max-height: 240px !important;  /* Increased proportionally */
+    max-height: 240px !important;
+    margin-bottom: 10px !important;  /* Add margin to push chart up */
 }
 
 /* Also add this to ensure the chart div doesn't overflow */
 .chart-container > div {
-    height: 220px !important;  /* Increased to show labels */
+    height: 240px !important;  /* Increased to accommodate labels */
+    padding-bottom: 10px !important;  /* Extra padding for labels */
 }
 
 /* Ensure chart text is visible */
